@@ -70,7 +70,7 @@ Table of Contents
 
 1.  Introduction
 
-   TODO Introduction
+   TODO Introduction.
 
 2.  Conventions and Definitions
 
@@ -82,7 +82,7 @@ Table of Contents
 
 3.  Security Considerations
 
-   TODO Security
+   TODO Security.
 
 4.  IANA Considerations
 
