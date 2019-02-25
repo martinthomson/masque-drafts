@@ -4,8 +4,8 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                          February 20, 2019
-Expires: August 24, 2019
+Intended status: Experimental                          February 25, 2019
+Expires: August 29, 2019
 
 
                           The MASQUE Protocol
@@ -46,14 +46,14 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on August 24, 2019.
+   This Internet-Draft will expire on August 29, 2019.
 
 
 
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 1]
+Schinazi                 Expires August 29, 2019                [Page 1]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 2]
+Schinazi                 Expires August 29, 2019                [Page 2]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -165,7 +165,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 3]
+Schinazi                 Expires August 29, 2019                [Page 3]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -221,7 +221,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 4]
+Schinazi                 Expires August 29, 2019                [Page 4]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -277,7 +277,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 5]
+Schinazi                 Expires August 29, 2019                [Page 5]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -333,7 +333,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 6]
+Schinazi                 Expires August 29, 2019                [Page 6]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -389,17 +389,12 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 7]
+Schinazi                 Expires August 29, 2019                [Page 7]
 
 Internet-Draft                   MASQUE                    February 2019
 
 
 7.2.  Informative References
-
-   [I-D.ietf-httpbis-h2-websockets]
-              McManus, P., "Bootstrapping WebSockets with HTTP/2",
-              draft-ietf-httpbis-h2-websockets-07 (work in progress),
-              June 2018.
 
    [I-D.ietf-httpbis-http2-secondary-certs]
               Bishop, M., Sullivan, N., and M. Thomson, "Secondary
@@ -426,6 +421,10 @@ Internet-Draft                   MASQUE                    February 2019
               DOI 10.17487/RFC7427, January 2015,
               <https://www.rfc-editor.org/info/rfc7427>.
 
+   [RFC8441]  McManus, P., "Bootstrapping WebSockets with HTTP/2",
+              RFC 8441, DOI 10.17487/RFC8441, September 2018,
+              <https://www.rfc-editor.org/info/rfc8441>.
+
    [RFC8471]  Popov, A., Ed., Nystroem, M., Balfanz, D., and J. Hodges,
               "The Token Binding Protocol Version 1.0", RFC 8471,
               DOI 10.17487/RFC8471, October 2018,
@@ -445,7 +444,8 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 8]
+
+Schinazi                 Expires August 29, 2019                [Page 8]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -460,9 +460,8 @@ Acknowledgments
    [I-D.schwartz-httpbis-helium] and
    [I-D.pardue-httpbis-http-network-tunnelling].  The mechanism used to
    run the MASQUE protocol over HTTP/2 streams was inspired by
-   [I-D.ietf-httpbis-h2-websockets].  Using the OID for the signature
-   algorithm was inspired by Signature Authentication in IKEv2
-   [RFC7427].
+   [RFC8441].  Using the OID for the signature algorithm was inspired by
+   Signature Authentication in IKEv2 [RFC7427].
 
    The author would like to thank Christophe A., an inspiration and true
    leader of VPNs.
@@ -498,15 +497,15 @@ Design Justifications
 
    The client authentication used here is similar to how Token Binding
    [RFC8471] operates, but it has very different goals.  MASQUE does not
+   use token binding directly because using token binding requires
 
 
 
-Schinazi                 Expires August 24, 2019                [Page 9]
+Schinazi                 Expires August 29, 2019                [Page 9]
 
 Internet-Draft                   MASQUE                    February 2019
 
 
-   use token binding directly because using token binding requires
    sending the token_binding TLS extension in the TLS ClientHello, and
    that would stick out compared to a regular TLS connection.
 
@@ -557,4 +556,5 @@ Author's Address
 
 
 
-Schinazi                 Expires August 24, 2019               [Page 10]
+
+Schinazi                 Expires August 29, 2019               [Page 10]
