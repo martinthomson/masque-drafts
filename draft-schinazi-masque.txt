@@ -238,6 +238,11 @@ Internet-Draft                   MASQUE                    February 2019
 
 4.  Mechanisms the Server Can Advertise to Authenticated Clients
 
+   Once a server has authenticated the client's MASQUE CONNECT request,
+   it advertises services that the client may use.  These services allow
+   for example varying degrees of proxying services to help a client
+   obfuscate the ultimate destination of their traffic.
+
 4.1.  HTTP Proxy
 
    The client can make proxied HTTP requests through the server to other
@@ -269,11 +274,6 @@ Internet-Draft                   MASQUE                    February 2019
    stream with a two-byte length prefix in network byte order.  The
    target IP and port are sent as part of the URL query.  Resetting that
    stream instructs the server to release any associates resources.
-
-
-
-
-
 
 
 
