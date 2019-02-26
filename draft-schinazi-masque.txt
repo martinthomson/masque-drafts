@@ -4,8 +4,8 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                          February 25, 2019
-Expires: August 29, 2019
+Intended status: Experimental                          February 26, 2019
+Expires: August 30, 2019
 
 
                           The MASQUE Protocol
@@ -46,14 +46,14 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on August 29, 2019.
+   This Internet-Draft will expire on August 30, 2019.
 
 
 
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 1]
+Schinazi                 Expires August 30, 2019                [Page 1]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 2]
+Schinazi                 Expires August 30, 2019                [Page 2]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -165,7 +165,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 3]
+Schinazi                 Expires August 30, 2019                [Page 3]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -221,7 +221,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 4]
+Schinazi                 Expires August 30, 2019                [Page 4]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -277,7 +277,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 5]
+Schinazi                 Expires August 30, 2019                [Page 5]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -333,7 +333,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 6]
+Schinazi                 Expires August 30, 2019                [Page 6]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -389,7 +389,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 7]
+Schinazi                 Expires August 30, 2019                [Page 7]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -445,7 +445,7 @@ Internet-Draft                   MASQUE                    February 2019
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 8]
+Schinazi                 Expires August 30, 2019                [Page 8]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -501,7 +501,7 @@ Design Justifications
 
 
 
-Schinazi                 Expires August 29, 2019                [Page 9]
+Schinazi                 Expires August 30, 2019                [Page 9]
 
 Internet-Draft                   MASQUE                    February 2019
 
@@ -557,4 +557,4 @@ Author's Address
 
 
 
-Schinazi                 Expires August 29, 2019               [Page 10]
+Schinazi                 Expires August 30, 2019               [Page 10]
