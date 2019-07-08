@@ -487,20 +487,8 @@ ul.toc li {
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#overview" id="overview">Overview of the Mechanism</a>
 </h1>
-<p id="rfc.section.4.p.1">The server runs an HTTPS server on port 443, and has a valid TLS certificate for its domain. The client has a public/private key pair, and the server maintains a list of authorized MASQUE clients, and their public key.  (Alternatively, clients can also be authenticated using a shared secret.) The client starts by establishing a regular HTTPS connection to the server (HTTP/3 over QUIC or HTTP/2 over TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> over TCP), and validates the server&#8217;s TLS certificate as it normally would for HTTPS. If validation fails, the connection is aborted. The client then uses a TLS keying material exporter <a href="#RFC5705" class="xref">[RFC5705]</a> with label &#8220;EXPORTER-masque&#8221; and no context to generate a 32-byte key. This key is then used as a nonce to prevent replay attacks. The client then sends an HTTP CONNECT request for &#8220;/.well-known/masque/initial&#8221; with the :protocol pseudo-header field set to &#8220;masque&#8221;, and a &#8220;Masque-Authentication:&#8221; header. The MASQUE authentication header differs from the HTTP &#8220;Authorization&#8221; header in that it applies to the underlying connection instead of being per-request. It can use either a shared secret or asymmetric authentication. The asymmetric variant uses authentication method &#8220;PublicKey&#8221;, and it transmits a signature of the nonce with the client&#8217;s public key encoded in base64 format, followed by other information such as the client username and signature algorithm OID. The symmetric variant uses authentication method &#8220;HMAC&#8221; and transmits an HMAC of the nonce with the shared secret instead of a signature. For example this header could look like:</p>
-<div id="rfc.figure.1"></div>
-<div id="auth-format"></div>
-<pre>
-Masque-Authentication: PublicKey u="am9obi5kb2U=";a=1.3.101.112;
-s="SW5zZXJ0IHNpZ25hdHVyZSBvZiBub25jZSBoZXJlIHdo
-aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
-
-Masque-Authentication: HMAC u="am9obi5kb2U=";a=2.16.840.1.101.3.4.2.3;
-s="SW5zZXJ0IHNpZ25hdHVyZSBvZiBub25jZSBoZXJlIHdo
-aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
-</pre>
-<p class="figure">Figure 1: MASQUE Authentication Format Example</p>
-<p id="rfc.section.4.p.2">When the server receives this CONNECT request, it verifies the signature and if that fails responds with code &#8220;405 Method Not Allowed&#8221;, making sure its response is the same as what it would return for any unexpected CONNECT request. If the signature verifies, the server responds with code &#8220;101 Switching Protocols&#8221;, and from then on this HTTP stream is now dedicated to the MASQUE protocol. That protocol provides a reliable bidirectional message exchange mechanism, which is used by the client and server to negotiate what protocol options are supported and enabled by policy, and client VPN configuration such as IP addresses. When using QUIC, this protocol also allows endpoints to negotiate the use of QUIC extensions, such as support for the DATAGRAM extension <a href="#I-D.pauly-quic-datagram" class="xref">[I-D.pauly-quic-datagram]</a>.</p>
+<p id="rfc.section.4.p.1">The server runs an HTTPS server on port 443, and has a valid TLS certificate for its domain. The client has a public/private key pair, and the server maintains a list of authorized MASQUE clients, and their public key.  (Alternatively, clients can also be authenticated using a shared secret.) The client starts by establishing a regular HTTPS connection to the server (HTTP/3 over QUIC or HTTP/2 over TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> over TCP), and validates the server&#8217;s TLS certificate as it normally would for HTTPS. If validation fails, the connection is aborted. The client then uses HTTP Transport Authentication (draft-schinazi-httpbis-transport-auth) to prove its possession of its associated key. The client sends the Transport-Authentication header alongside an HTTP CONNECT request for &#8220;/.well-known/masque/initial&#8221; with the :protocol pseudo-header field set to &#8220;masque&#8221;.</p>
+<p id="rfc.section.4.p.2">When the server receives this CONNECT request, it authenticates the client and if that fails responds with code &#8220;405 Method Not Allowed&#8221;, making sure its response is the same as what it would return for any unexpected CONNECT request. If authentication succeeds, the server responds with code &#8220;101 Switching Protocols&#8221;, and from then on this HTTP stream is now dedicated to the MASQUE protocol. That protocol provides a reliable bidirectional message exchange mechanism, which is used by the client and server to negotiate what protocol options are supported and enabled by policy, and client VPN configuration such as IP addresses. When using QUIC, this protocol also allows endpoints to negotiate the use of QUIC extensions, such as support for the DATAGRAM extension <a href="#I-D.pauly-quic-datagram" class="xref">[I-D.pauly-quic-datagram]</a>.</p>
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#mechanisms" id="mechanisms">Mechanisms the Server Can Advertise to Authenticated Clients</a>
 </h1>
@@ -560,20 +548,12 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <p id="rfc.section.8.p.1">We will need to register:</p>
 <p></p>
 
-<ul><li>the TLS keying material exporter label &#8220;EXPORTER-masque&#8221; (spec required)</li></ul>
-<p><a href="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#exporter-labels">https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#exporter-labels</a></p>
-<p></p>
-
-<ul><li>the new HTTP header &#8220;Masque-Authentication&#8221;</li></ul>
-<p><a href="https://www.iana.org/assignments/message-headers/message-headers.xhtml">https://www.iana.org/assignments/message-headers/message-headers.xhtml</a></p>
-<p></p>
-
 <ul><li>the &#8220;/.well-known/masque/&#8221; URI (expert review)</li></ul>
 <p><a href="https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml">https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml</a></p>
 <p></p>
 
 <ul><li>The &#8220;masque&#8221; and &#8220;masque-udp-proxy&#8221; extended HTTP CONNECT protocols</li></ul>
-<p id="rfc.section.8.p.9">We will also need to define the MASQUE control protocol and that will be likely to define new registries of its own.</p>
+<p id="rfc.section.8.p.5">We will also need to define the MASQUE control protocol and that will be likely to define new registries of its own.</p>
 <h1 id="rfc.references">
 <a href="#rfc.references">9.</a> References</h1>
 <h1 id="rfc.references.1">
@@ -603,11 +583,6 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
 <td class="top">
 <a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC5705">[RFC5705]</b></td>
-<td class="top">
-<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/rfc5705">Keying Material Exporters for Transport Layer Security (TLS)</a>", RFC 5705, DOI 10.17487/RFC5705, March 2010.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7540">[RFC7540]</b></td>
@@ -669,11 +644,6 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <a>Sullivan, N.</a>, <a>Thomson, M.</a> and <a>M. Bishop</a>, "<a href="https://tools.ietf.org/html/draft-sullivan-tls-post-handshake-auth-00">Post-Handshake Authentication in TLS</a>", Internet-Draft draft-sullivan-tls-post-handshake-auth-00, August 2016.</td>
 </tr>
 <tr>
-<td class="reference"><b id="RFC7427">[RFC7427]</b></td>
-<td class="top">
-<a>Kivinen, T.</a> and <a>J. Snyder</a>, "<a href="https://tools.ietf.org/html/rfc7427">Signature Authentication in the Internet Key Exchange Version 2 (IKEv2)</a>", RFC 7427, DOI 10.17487/RFC7427, January 2015.</td>
-</tr>
-<tr>
 <td class="reference"><b id="RFC8441">[RFC8441]</b></td>
 <td class="top">
 <a>McManus, P.</a>, "<a href="https://tools.ietf.org/html/rfc8441">Bootstrapping WebSockets with HTTP/2</a>", RFC 8441, DOI 10.17487/RFC8441, September 2018.</td>
@@ -685,7 +655,7 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 </tr>
 </tbody></table>
 <h1 id="rfc.acknowledgments"><a href="#rfc.acknowledgments">Acknowledgments</a></h1>
-<p id="rfc.section.A.p.1">This proposal was inspired directly or indirectly by prior work from many people. In particular, this work is related to <a href="#I-D.schwartz-httpbis-helium" class="xref">[I-D.schwartz-httpbis-helium]</a> and <a href="#I-D.pardue-httpbis-http-network-tunnelling" class="xref">[I-D.pardue-httpbis-http-network-tunnelling]</a>. The mechanism used to run the MASQUE protocol over HTTP/2 streams was inspired by <a href="#RFC8441" class="xref">[RFC8441]</a>.  Using the OID for the signature algorithm was inspired by Signature Authentication in IKEv2 <a href="#RFC7427" class="xref">[RFC7427]</a>. Brendan Moran is to thank for the idea of leveraging connection migration across MASQUE servers.</p>
+<p id="rfc.section.A.p.1">This proposal was inspired directly or indirectly by prior work from many people. In particular, this work is related to <a href="#I-D.schwartz-httpbis-helium" class="xref">[I-D.schwartz-httpbis-helium]</a> and <a href="#I-D.pardue-httpbis-http-network-tunnelling" class="xref">[I-D.pardue-httpbis-http-network-tunnelling]</a>. The mechanism used to run the MASQUE protocol over HTTP/2 streams was inspired by <a href="#RFC8441" class="xref">[RFC8441]</a>.  Brendan Moran is to thank for the idea of leveraging connection migration across MASQUE servers.</p>
 <p id="rfc.section.A.p.2">The author would like to thank Christophe A., an inspiration and true leader of VPNs.</p>
 <h1 id="rfc.design_justifications"><a href="#rfc.design_justifications">Design Justifications</a></h1>
 <p id="rfc.section.B.p.1">Using an exported key as a nonce allows us to prevent replay attacks (since it depends on randomness from both endpoints of the TLS connection) without requiring the server to send an explicit nonce before it has authenticated the client. Adding an explicit nonce mechanism would expose the server as it would need to send these nonces to clients that have not been authenticated yet.</p>

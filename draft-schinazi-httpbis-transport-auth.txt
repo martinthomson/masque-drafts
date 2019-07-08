@@ -436,11 +436,11 @@ Internet-Draft        HTTP Transport Authentication            July 2019
               DOI 10.17487/RFC6234, May 2011,
               <https://www.rfc-editor.org/info/rfc6234>.
 
-   [RFC8410]  Josefsson, S. and J. Schaad, "Algorithm Identifiers for
-              Ed25519, Ed448, X25519, and X448 for Use in the Internet
-              X.509 Public Key Infrastructure", RFC 8410,
-              DOI 10.17487/RFC8410, August 2018,
-              <https://www.rfc-editor.org/info/rfc8410>.
+   [RFC7427]  Kivinen, T. and J. Snyder, "Signature Authentication in
+              the Internet Key Exchange Version 2 (IKEv2)", RFC 7427,
+              DOI 10.17487/RFC7427, January 2015,
+              <https://www.rfc-editor.org/info/rfc7427>.
+
 
 
 
@@ -449,6 +449,12 @@ Schinazi                 Expires January 9, 2020                [Page 8]
 
 Internet-Draft        HTTP Transport Authentication            July 2019
 
+
+   [RFC8410]  Josefsson, S. and J. Schaad, "Algorithm Identifiers for
+              Ed25519, Ed448, X25519, and X448 for Use in the Internet
+              X.509 Public Key Infrastructure", RFC 8410,
+              DOI 10.17487/RFC8410, August 2018,
+              <https://www.rfc-editor.org/info/rfc8410>.
 
 8.3.  URIs
 
@@ -460,7 +466,9 @@ Internet-Draft        HTTP Transport Authentication            July 2019
 Acknowledgments
 
    The authors would like to thank many members of the IETF community,
-   as this document is the fruit of many hallway conversations.
+   as this document is the fruit of many hallway conversations.  Using
+   the OID for the signature and HMAC algorithms was inspired by
+   Signature Authentication in IKEv2 [RFC7427].
 
 Author's Address
 
@@ -471,14 +479,6 @@ Author's Address
    United States of America
 
    Email: dschinazi.ietf@gmail.com
-
-
-
-
-
-
-
-
 
 
 

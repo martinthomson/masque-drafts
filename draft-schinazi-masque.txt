@@ -87,25 +87,25 @@ Table of Contents
      3.2.  Invisibility of the Server  . . . . . . . . . . . . . . .   5
      3.3.  Fallback to HTTP/2 over TLS over TCP  . . . . . . . . . .   5
    4.  Overview of the Mechanism . . . . . . . . . . . . . . . . . .   5
-   5.  Mechanisms the Server Can Advertise to Authenticated Clients    6
+   5.  Mechanisms the Server Can Advertise to Authenticated Clients    5
      5.1.  HTTP Proxy  . . . . . . . . . . . . . . . . . . . . . . .   6
      5.2.  DNS over HTTPS  . . . . . . . . . . . . . . . . . . . . .   6
      5.3.  UDP Proxying  . . . . . . . . . . . . . . . . . . . . . .   6
-     5.4.  QUIC Proxying . . . . . . . . . . . . . . . . . . . . . .   7
+     5.4.  QUIC Proxying . . . . . . . . . . . . . . . . . . . . . .   6
      5.5.  IP Proxying . . . . . . . . . . . . . . . . . . . . . . .   7
      5.6.  Path MTU Discovery  . . . . . . . . . . . . . . . . . . .   7
-     5.7.  Service Registration  . . . . . . . . . . . . . . . . . .   8
-   6.  Operation over HTTP/2 . . . . . . . . . . . . . . . . . . . .   8
+     5.7.  Service Registration  . . . . . . . . . . . . . . . . . .   7
+   6.  Operation over HTTP/2 . . . . . . . . . . . . . . . . . . . .   7
    7.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
      7.1.  Traffic Analysis  . . . . . . . . . . . . . . . . . . . .   8
-     7.2.  Untrusted Servers . . . . . . . . . . . . . . . . . . . .   9
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
+     7.2.  Untrusted Servers . . . . . . . . . . . . . . . . . . . .   8
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
    9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
      9.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  11
-     9.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . .  12
-   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .  12
-   Design Justifications . . . . . . . . . . . . . . . . . . . . . .  12
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  10
+     9.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . .  11
+   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .  11
+   Design Justifications . . . . . . . . . . . . . . . . . . . . . .  11
 
 
 
@@ -114,7 +114,7 @@ Schinazi                 Expires January 9, 2020                [Page 2]
 Internet-Draft                   MASQUE                        July 2019
 
 
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  14
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  12
 
 1.  Introduction
 
@@ -249,30 +249,30 @@ Internet-Draft                   MASQUE                        July 2019
    establishing a regular HTTPS connection to the server (HTTP/3 over
    QUIC or HTTP/2 over TLS 1.3 [RFC8446] over TCP), and validates the
    server's TLS certificate as it normally would for HTTPS.  If
-   validation fails, the connection is aborted.  The client then uses a
-   TLS keying material exporter [RFC5705] with label "EXPORTER-masque"
-   and no context to generate a 32-byte key.  This key is then used as a
-   nonce to prevent replay attacks.  The client then sends an HTTP
-   CONNECT request for "/.well-known/masque/initial" with the :protocol
-   pseudo-header field set to "masque", and a "Masque-Authentication:"
-   header.  The MASQUE authentication header differs from the HTTP
-   "Authorization" header in that it applies to the underlying
-   connection instead of being per-request.  It can use either a shared
-   secret or asymmetric authentication.  The asymmetric variant uses
-   authentication method "PublicKey", and it transmits a signature of
-   the nonce with the client's public key encoded in base64 format,
-   followed by other information such as the client username and
-   signature algorithm OID.  The symmetric variant uses authentication
-   method "HMAC" and transmits an HMAC of the nonce with the shared
-   secret instead of a signature.  For example this header could look
-   like:
+   validation fails, the connection is aborted.  The client then uses
+   HTTP Transport Authentication (draft-schinazi-httpbis-transport-auth)
+   to prove its possession of its associated key.  The client sends the
+   Transport-Authentication header alongside an HTTP CONNECT request for
+   "/.well-known/masque/initial" with the :protocol pseudo-header field
+   set to "masque".
 
+   When the server receives this CONNECT request, it authenticates the
+   client and if that fails responds with code "405 Method Not Allowed",
+   making sure its response is the same as what it would return for any
+   unexpected CONNECT request.  If authentication succeeds, the server
+   responds with code "101 Switching Protocols", and from then on this
+   HTTP stream is now dedicated to the MASQUE protocol.  That protocol
+   provides a reliable bidirectional message exchange mechanism, which
+   is used by the client and server to negotiate what protocol options
+   are supported and enabled by policy, and client VPN configuration
+   such as IP addresses.  When using QUIC, this protocol also allows
+   endpoints to negotiate the use of QUIC extensions, such as support
+   for the DATAGRAM extension [I-D.pauly-quic-datagram].
 
+5.  Mechanisms the Server Can Advertise to Authenticated Clients
 
-
-
-
-
+   Once a server has authenticated the client's MASQUE CONNECT request,
+   it advertises services that the client may use.
 
 
 
@@ -281,35 +281,6 @@ Schinazi                 Expires January 9, 2020                [Page 5]
 
 Internet-Draft                   MASQUE                        July 2019
 
-
-  Masque-Authentication: PublicKey u="am9obi5kb2U=";a=1.3.101.112;
-  s="SW5zZXJ0IHNpZ25hdHVyZSBvZiBub25jZSBoZXJlIHdo
-  aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
-
-  Masque-Authentication: HMAC u="am9obi5kb2U=";a=2.16.840.1.101.3.4.2.3;
-  s="SW5zZXJ0IHNpZ25hdHVyZSBvZiBub25jZSBoZXJlIHdo
-  aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
-
-              Figure 1: MASQUE Authentication Format Example
-
-   When the server receives this CONNECT request, it verifies the
-   signature and if that fails responds with code "405 Method Not
-   Allowed", making sure its response is the same as what it would
-   return for any unexpected CONNECT request.  If the signature
-   verifies, the server responds with code "101 Switching Protocols",
-   and from then on this HTTP stream is now dedicated to the MASQUE
-   protocol.  That protocol provides a reliable bidirectional message
-   exchange mechanism, which is used by the client and server to
-   negotiate what protocol options are supported and enabled by policy,
-   and client VPN configuration such as IP addresses.  When using QUIC,
-   this protocol also allows endpoints to negotiate the use of QUIC
-   extensions, such as support for the DATAGRAM extension
-   [I-D.pauly-quic-datagram].
-
-5.  Mechanisms the Server Can Advertise to Authenticated Clients
-
-   Once a server has authenticated the client's MASQUE CONNECT request,
-   it advertises services that the client may use.
 
 5.1.  HTTP Proxy
 
@@ -330,14 +301,6 @@ Internet-Draft                   MASQUE                        July 2019
    widely deployed protocols other than DNS, this involves many
    datagrams over the same ports.  Therefore this mechanism implements
    that efficiently: clients can use the MASQUE protocol stream to
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 6]
-
-Internet-Draft                   MASQUE                        July 2019
-
-
    request an UDP association to an IP address and UDP port pair.  In
    QUIC, the server would reply with a DATAGRAM_ID that the client can
    then use to have UDP datagrams sent to this remote server.  Datagrams
@@ -366,6 +329,15 @@ Internet-Draft                   MASQUE                        July 2019
 
    Compared to UDP proxying, this mode has the advantage of only
    requiring one UDP port to be open on the MASQUE server, and can lower
+
+
+
+
+Schinazi                 Expires January 9, 2020                [Page 6]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    the overhead on the link between client and MASQUE server by
    compressing connection IDs.
 
@@ -386,13 +358,6 @@ Internet-Draft                   MASQUE                        July 2019
    client is responsible for not sending overly large UDP packets and
    notifying the server of the low MTU.  Therefore PMTUD is currently
    seen as out of scope of this document.
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 7]
-
-Internet-Draft                   MASQUE                        July 2019
-
 
 5.7.  Service Registration
 
@@ -421,6 +386,14 @@ Internet-Draft                   MASQUE                        July 2019
    opposed to only HTTP/2) using the same mechanism as regular HTTP
    traffic.  This current standardized mechanism for this is HTTP
    Alternative Services [RFC7838], but future mechanisms such as
+
+
+
+Schinazi                 Expires January 9, 2020                [Page 7]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    [I-D.schwartz-httpbis-dns-alt-svc] can be used if they become
    widespread.
 
@@ -442,14 +415,6 @@ Internet-Draft                   MASQUE                        July 2019
    When multiple MASQUE servers are available, a client can leverage
    QUIC connection migration to seamlessly transition its end-to-end
    QUIC connections by treating separate MASQUE servers as different
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 8]
-
-Internet-Draft                   MASQUE                        July 2019
-
-
    paths.  This could afford an additional level of obfuscation in hopes
    of rendering traffic analysis less effective.
 
@@ -467,27 +432,23 @@ Internet-Draft                   MASQUE                        July 2019
 
    We will need to register:
 
-   o  the TLS keying material exporter label "EXPORTER-masque" (spec
-      required)
-
-   https://www.iana.org/assignments/tls-parameters/tls-
-   parameters.xhtml#exporter-labels [5]
-
-   o  the new HTTP header "Masque-Authentication"
-
-   https://www.iana.org/assignments/message-headers/message-
-   headers.xhtml [6]
-
    o  the "/.well-known/masque/" URI (expert review)
 
    https://www.iana.org/assignments/well-known-uris/well-known-
-   uris.xhtml [7]
+   uris.xhtml [5]
 
    o  The "masque" and "masque-udp-proxy" extended HTTP CONNECT
       protocols
 
    We will also need to define the MASQUE control protocol and that will
    be likely to define new registries of its own.
+
+
+
+Schinazi                 Expires January 9, 2020                [Page 8]
+
+Internet-Draft                   MASQUE                        July 2019
+
 
 9.  References
 
@@ -497,14 +458,6 @@ Internet-Draft                   MASQUE                        July 2019
               Bishop, M., "Hypertext Transfer Protocol Version 3
               (HTTP/3)", draft-ietf-quic-http-20 (work in progress),
               April 2019.
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 9]
-
-Internet-Draft                   MASQUE                        July 2019
-
 
    [I-D.ietf-quic-transport]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
@@ -526,10 +479,6 @@ Internet-Draft                   MASQUE                        July 2019
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
-   [RFC5705]  Rescorla, E., "Keying Material Exporters for Transport
-              Layer Security (TLS)", RFC 5705, DOI 10.17487/RFC5705,
-              March 2010, <https://www.rfc-editor.org/info/rfc5705>.
-
    [RFC7540]  Belshe, M., Peon, R., and M. Thomson, Ed., "Hypertext
               Transfer Protocol Version 2 (HTTP/2)", RFC 7540,
               DOI 10.17487/RFC7540, May 2015,
@@ -547,20 +496,19 @@ Internet-Draft                   MASQUE                        July 2019
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
               <https://www.rfc-editor.org/info/rfc8446>.
 
-   [RFC8484]  Hoffman, P. and P. McManus, "DNS Queries over HTTPS
-              (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
-              <https://www.rfc-editor.org/info/rfc8484>.
 
 
 
 
 
-
-
-Schinazi                 Expires January 9, 2020               [Page 10]
+Schinazi                 Expires January 9, 2020                [Page 9]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   [RFC8484]  Hoffman, P. and P. McManus, "DNS Queries over HTTPS
+              (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
+              <https://www.rfc-editor.org/info/rfc8484>.
 
 9.2.  Informative References
 
@@ -594,11 +542,6 @@ Internet-Draft                   MASQUE                        July 2019
               Authentication in TLS", draft-sullivan-tls-post-handshake-
               auth-00 (work in progress), August 2016.
 
-   [RFC7427]  Kivinen, T. and J. Snyder, "Signature Authentication in
-              the Internet Key Exchange Version 2 (IKEv2)", RFC 7427,
-              DOI 10.17487/RFC7427, January 2015,
-              <https://www.rfc-editor.org/info/rfc7427>.
-
    [RFC8441]  McManus, P., "Bootstrapping WebSockets with HTTP/2",
               RFC 8441, DOI 10.17487/RFC8441, September 2018,
               <https://www.rfc-editor.org/info/rfc8441>.
@@ -613,7 +556,8 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020               [Page 11]
+
+Schinazi                 Expires January 9, 2020               [Page 10]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -628,13 +572,7 @@ Internet-Draft                   MASQUE                        July 2019
 
    [4] https://github.com/DavidSchinazi/masque-drafts
 
-   [5] https://www.iana.org/assignments/tls-parameters/tls-
-       parameters.xhtml#exporter-labels
-
-   [6] https://www.iana.org/assignments/message-headers/message-
-       headers.xhtml
-
-   [7] https://www.iana.org/assignments/well-known-uris/well-known-
+   [5] https://www.iana.org/assignments/well-known-uris/well-known-
        uris.xhtml
 
 Acknowledgments
@@ -644,10 +582,8 @@ Acknowledgments
    [I-D.schwartz-httpbis-helium] and
    [I-D.pardue-httpbis-http-network-tunnelling].  The mechanism used to
    run the MASQUE protocol over HTTP/2 streams was inspired by
-   [RFC8441].  Using the OID for the signature algorithm was inspired by
-   Signature Authentication in IKEv2 [RFC7427].  Brendan Moran is to
-   thank for the idea of leveraging connection migration across MASQUE
-   servers.
+   [RFC8441].  Brendan Moran is to thank for the idea of leveraging
+   connection migration across MASQUE servers.
 
    The author would like to thank Christophe A., an inspiration and true
    leader of VPNs.
@@ -665,15 +601,6 @@ Design Justifications
    server-initiated messages.  If we were to use HTTP semantics, we
    would only be able to support the client-initiated request-response
    model.  We could have used WebSocket for this purpose but that would
-
-
-
-
-Schinazi                 Expires January 9, 2020               [Page 12]
-
-Internet-Draft                   MASQUE                        July 2019
-
-
    have added wire overhead and dependencies without providing useful
    features.
 
@@ -683,6 +610,14 @@ Internet-Draft                   MASQUE                        July 2019
 
    The current proposal would also work with TLS 1.2, but in that case
    TLS false start and renegotiation must be disabled, and the extended
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 11]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    master secret and renegotiation indication TLS extensions must be
    enabled.
 
@@ -722,19 +657,22 @@ Internet-Draft                   MASQUE                        July 2019
    HMACs (and signatures) need some data to sign, and to avoid replay
    attacks that should be a fresh nonce provided by the remote peer.
    Having the server provide an explicit nonce would leak the existence
-
-
-
-Schinazi                 Expires January 9, 2020               [Page 13]
-
-Internet-Draft                   MASQUE                        July 2019
-
-
    of the server so we use TLS keying material exporters as they provide
    us with a nonce that contains entropy from the server without
    requiring explicit communication.
 
 Author's Address
+
+
+
+
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 12]
+
+Internet-Draft                   MASQUE                        July 2019
+
 
    David Schinazi
    Google LLC
@@ -781,4 +719,10 @@ Author's Address
 
 
 
-Schinazi                 Expires January 9, 2020               [Page 14]
+
+
+
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 13]
