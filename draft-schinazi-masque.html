@@ -509,7 +509,7 @@ ul.toc li {
 <h1 id="rfc.section.5.4">
 <a href="#rfc.section.5.4">5.4.</a> <a href="#quic-proxy" id="quic-proxy">QUIC Proxying</a>
 </h1>
-<p id="rfc.section.5.4.p.1">By leveraging QUIC client connection IDs, a MASQUE server can act as a QUIC proxy while only using one UDP port. The server informs the client of a scheme client connection IDs (for example, random of a minimum length or vended by the MASQUE server) and then the server can forward those packets to further web servers.</p>
+<p id="rfc.section.5.4.p.1">By leveraging QUIC client connection IDs, a MASQUE server can act as a QUIC proxy while only using one UDP port. The server informs the client of a scheme for client connection IDs (for example, random of a minimum length or vended by the MASQUE server) and then the server can forward those packets to further web servers.</p>
 <p id="rfc.section.5.4.p.2">This mechanism can elide the connection IDs on the link between the client and MASQUE server by negotiating a mapping between DATAGRAM_IDs and the tuple (client connection ID, server connection ID, server IP address, server port).</p>
 <p id="rfc.section.5.4.p.3">Compared to UDP proxying, this mode has the advantage of only requiring one UDP port to be open on the MASQUE server, and can lower the overhead on the link between client and MASQUE server by compressing connection IDs.</p>
 <h1 id="rfc.section.5.5">
