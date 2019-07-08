@@ -1,0 +1,670 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+
+  <title>HTTP Transport Authentication</title>
+
+  
+<style type="text/css">/*<![CDATA[*/
+
+body {
+  font: 16px "Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
+  color: #333;
+  font-size-adjust: 0.5;
+  line-height: 24px;
+  margin: 75px auto;
+  max-width: 624px;
+  padding: 0 5px;
+}
+
+.title, .filename, h1, h2, h3, h4, h5 {
+  font: 16px "Roboto Condensed","Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
+  font-size-adjust: 0.5;
+  font-weight: bold;
+  color: #333;
+  line-height: 100%;
+  margin: 1.2em 0 0.3em;
+}
+.title, #rfc\.title h1 { font-size: 32px; }
+h1, section h1, h2, section h2, section h3, nav h2 { font-size: 20px; }
+h3, section h4, h4, section h5 { font-size: 16px; }
+h1 a[href], h2 a[href], h3 a[href], h4 a[href] {
+  color: #333;
+}
+
+table {
+  margin-left: 0em;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+td {
+  border-top: 1px solid #ddd;
+  vertical-align: top;
+}
+tr:nth-child(2n+1) > td,
+tr:nth-child(2n+1) > th {
+  background-color: #f9f9f9;
+}
+td.reference {
+  max-width: 200px;
+  border-top: none;
+  padding-right: 1em;
+}
+.right {
+  text-align: right;
+}
+
+
+table.header, table#rfc\.headerblock {
+  width: 100%;
+}
+table.header td, table#rfc\.headerblock td {
+  border: none;
+  background-color: transparent;
+  color: black;
+  padding: 0;
+}
+.filename {
+  display: block;
+  color: rgb(119, 119, 119);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 100%;
+  margin: 10px 0 32px;
+}
+#rfc\.abstract+p, #rfc\.abstract p {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+samp, tt, code, pre, span.tt {
+  font: 13.5px Consolas, monospace;
+  font-size-adjust: none;
+}
+pre {
+  background-color: #eee;
+  border: 1px solid #ddd;
+  overflow-x: auto;
+  padding: 5px;
+  margin: 5px;
+}
+.figure, caption {
+  font-style: italic;
+  margin: 0 1.5em;
+  text-align: left;
+}
+
+address {
+  margin: 16px 2px;
+  line-height: 20px;
+}
+.vcard {
+  font-style: normal;
+}
+.vcardline {
+  display: block;
+}
+.vcardline .fn, address b {
+  font-weight: normal;
+}
+.vcardline .hidden {
+  display: none;
+}
+
+dl {
+  margin-left: 1em;
+}
+dl.dl-horizontal: {
+  margin-left: 0;
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.nohang > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .5em;
+}
+dl.compact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+ul.empty {
+  list-style-type: none;
+}
+ul.empty li {
+  margin-top: .5em;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+hr.noprint {
+  display: none;
+}
+
+a {
+  text-decoration: none;
+}
+a[href] {
+  color: #2a6496;
+}
+a[href]:hover {
+  background-color: #eee;
+}
+
+p, ol, ul, li {
+  padding: 0;
+}
+p {
+  margin: 0.5em 0;
+}
+ol, ul {
+  margin: 0.2em 0 0.2em 2em;
+}
+li {
+  margin: 0.2em 0;
+}
+address {
+  font-style: normal;
+}
+
+ul.toc ul {
+  margin: 0 0 0 2em;
+}
+ul.toc li {
+  list-style: none;
+  margin: 0;
+}
+
+@media screen and (min-width: 924px) {
+  body {
+    padding-right: 350px;
+  }
+  body>ul.toc, body>#rfc\.toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 500px);
+    width: 300px;
+    z-index: 1;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  body>#rfc\.toc {
+    top: 55px;
+  }
+  body>ul.toc {
+    top: 100px;
+  }
+
+  ul.toc {
+    margin: 0 0 0 4px;
+    font-size: 12px;
+    line-height: 20px;
+  }
+  ul.toc ul {
+    margin-left: 1.2em;
+  }
+}
+
+.github-fork-ribbon-wrapper {
+  display: none;
+}
+@media screen and (min-width: 800px) {
+  /* "Fork me on GitHub" CSS ribbon based on
+   * https://github.com/simonwhitaker/github-fork-ribbon-css
+   */
+  .github-fork-ribbon {
+    position: absolute;
+    padding: 2px 0;
+    background-color: #a00;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    pointer-events: auto;
+
+    top: 38px;
+    right: -45px;
+
+    transform: rotate(45deg);
+  }
+
+  .github-fork-ribbon a[href],
+  .github-fork-ribbon a[href]:hover {
+    color: #fff;
+    background-color: transparent;
+    text-decoration: none;
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+
+    width: 190px;
+    line-height: 18px;
+
+    display: inline-block;
+    padding: 2px 0;
+
+    border: 1.5px dotted #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .github-fork-ribbon-wrapper {
+    display: block;
+    width: 130px;
+    height: 130px;
+    position: absolute;
+    overflow: hidden;
+    top: 0; right: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+@media screen and (min-width: 1000px) {
+  .github-fork-ribbon-wrapper {
+    position: fixed;
+  }
+/*]]>*/</style>
+<meta name="viewport" content="initial-scale=1.0">
+
+
+  <link href="#rfc.toc" rel="Contents">
+<link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
+<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Conventions and Definitions">
+<link href="#rfc.section.2" rel="Chapter" title="2 Computing the Authentication Proof">
+<link href="#rfc.section.3" rel="Chapter" title="3 Header Field Definition">
+<link href="#rfc.section.3.1" rel="Chapter" title="3.1 The u Directive">
+<link href="#rfc.section.3.2" rel="Chapter" title="3.2 The p Directive">
+<link href="#rfc.section.3.3" rel="Chapter" title="3.3 The a Directive">
+<link href="#rfc.section.4" rel="Chapter" title="4 Transport Authentication Schemes">
+<link href="#rfc.section.4.1" rel="Chapter" title="4.1 Signature">
+<link href="#rfc.section.4.2" rel="Chapter" title="4.2 HMAC">
+<link href="#rfc.section.5" rel="Chapter" title="5 Proxy Considerations">
+<link href="#rfc.section.6" rel="Chapter" title="6 Security Considerations">
+<link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations">
+<link href="#rfc.section.7.1" rel="Chapter" title="7.1 Transport-Authentication Header Field">
+<link href="#rfc.section.7.2" rel="Chapter" title="7.2 Transport Authentication Schemes Registry">
+<link href="#rfc.section.7.3" rel="Chapter" title="7.3 TLS Keying Material Exporter Labels">
+<link href="#rfc.references" rel="Chapter" title="8 References">
+<link href="#rfc.references.1" rel="Chapter" title="8.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="8.2 Informative References">
+<link href="#rfc.acknowledgments" rel="Chapter">
+<link href="#rfc.authors" rel="Chapter">
+
+
+  <meta name="generator" content="xml2rfc version 2.19.0 - https://tools.ietf.org/tools/xml2rfc" />
+  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+
+  <meta name="dct.creator" content="Schinazi, D." />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-schinazi-httpbis-transport-auth" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-07-08" />
+  <meta name="dct.abstract" content="The most common existing authentication mechanisms for HTTP are sent with each HTTP request, and authenticate that request instead of the underlying HTTP connection, or transport. While these mechanisms work well for existing uses of HTTP, they are not suitable for emerging applications that multiplex non-HTTP traffic inside an HTTP connection. This document describes the HTTP Transport Authentication Framework, a method of authenticating not only an HTTP request, but also its underlying transport." />
+  <meta name="description" content="The most common existing authentication mechanisms for HTTP are sent with each HTTP request, and authenticate that request instead of the underlying HTTP connection, or transport. While these mechanisms work well for existing uses of HTTP, they are not suitable for emerging applications that multiplex non-HTTP traffic inside an HTTP connection. This document describes the HTTP Transport Authentication Framework, a method of authenticating not only an HTTP request, but also its underlying transport." />
+
+</head>
+
+<body>
+
+  <table class="header">
+    <tbody>
+    
+    	<tr>
+<td class="left">Network Working Group</td>
+<td class="right">D. Schinazi</td>
+</tr>
+<tr>
+<td class="left">Internet-Draft</td>
+<td class="right">Google LLC</td>
+</tr>
+<tr>
+<td class="left">Intended status: Experimental</td>
+<td class="right">July 08, 2019</td>
+</tr>
+<tr>
+<td class="left">Expires: January 9, 2020</td>
+<td class="right"></td>
+</tr>
+
+    	
+    </tbody>
+  </table>
+
+  <p class="title">HTTP Transport Authentication<br />
+  <span class="filename">draft-schinazi-httpbis-transport-auth</span></p>
+  
+  <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
+<p>The most common existing authentication mechanisms for HTTP are sent with each HTTP request, and authenticate that request instead of the underlying HTTP connection, or transport. While these mechanisms work well for existing uses of HTTP, they are not suitable for emerging applications that multiplex non-HTTP traffic inside an HTTP connection. This document describes the HTTP Transport Authentication Framework, a method of authenticating not only an HTTP request, but also its underlying transport.</p>
+<h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
+<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
+<p>This Internet-Draft will expire on January 9, 2020.</p>
+<h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
+<p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+
+  
+  <hr class="noprint" />
+  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
+  <ul class="toc">
+
+  	<li>1.   <a href="#rfc.section.1">Introduction</a>
+</li>
+<ul><li>1.1.   <a href="#rfc.section.1.1">Conventions and Definitions</a>
+</li>
+</ul><li>2.   <a href="#rfc.section.2">Computing the Authentication Proof</a>
+</li>
+<li>3.   <a href="#rfc.section.3">Header Field Definition</a>
+</li>
+<ul><li>3.1.   <a href="#rfc.section.3.1">The u Directive</a>
+</li>
+<li>3.2.   <a href="#rfc.section.3.2">The p Directive</a>
+</li>
+<li>3.3.   <a href="#rfc.section.3.3">The a Directive</a>
+</li>
+</ul><li>4.   <a href="#rfc.section.4">Transport Authentication Schemes</a>
+</li>
+<ul><li>4.1.   <a href="#rfc.section.4.1">Signature</a>
+</li>
+<li>4.2.   <a href="#rfc.section.4.2">HMAC</a>
+</li>
+</ul><li>5.   <a href="#rfc.section.5">Proxy Considerations</a>
+</li>
+<li>6.   <a href="#rfc.section.6">Security Considerations</a>
+</li>
+<li>7.   <a href="#rfc.section.7">IANA Considerations</a>
+</li>
+<ul><li>7.1.   <a href="#rfc.section.7.1">Transport-Authentication Header Field</a>
+</li>
+<li>7.2.   <a href="#rfc.section.7.2">Transport Authentication Schemes Registry</a>
+</li>
+<li>7.3.   <a href="#rfc.section.7.3">TLS Keying Material Exporter Labels</a>
+</li>
+</ul><li>8.   <a href="#rfc.references">References</a>
+</li>
+<ul><li>8.1.   <a href="#rfc.references.1">Normative References</a>
+</li>
+<li>8.2.   <a href="#rfc.references.2">Informative References</a>
+</li>
+</ul><li><a href="#rfc.acknowledgments">Acknowledgments</a>
+</li>
+<li><a href="#rfc.authors">Author's Address</a>
+</li>
+
+
+  </ul>
+
+  <h1 id="rfc.section.1">
+<a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
+</h1>
+<p id="rfc.section.1.p.1">The most common existing authentication mechanisms for HTTP are sent with each HTTP request, and authenticate that request instead of the underlying HTTP connection, or transport. While these mechanisms work well for existing uses of HTTP, they are not suitable for emerging applications that multiplex non-HTTP traffic inside an HTTP connection. This document describes the HTTP Transport Authentication Framework, a method of authenticating not only an HTTP request, but also its underlying transport.</p>
+<p id="rfc.section.1.p.2">Traditional HTTP semantics specify that HTTP is a stateless protocol where each request can be understood in isolation <a href="#RFC7230" class="xref">[RFC7230]</a>. However, the emergence of QUIC <a href="#I-D.ietf-quic-transport" class="xref">[I-D.ietf-quic-transport]</a> as a new transport protocol that can carry HTTP <a href="#I-D.ietf-quic-http" class="xref">[I-D.ietf-quic-http]</a> and the existence of QUIC extensions such as the DATAGRAM frame <a href="#I-D.pauly-quic-datagram" class="xref">[I-D.pauly-quic-datagram]</a> enable new uses of HTTP such as <a href="#I-D.vvv-webtransport-http3" class="xref">[I-D.vvv-webtransport-http3]</a> and <a href="#I-D.schinazi-masque" class="xref">[I-D.schinazi-masque]</a> where some traffic is exchanged that is disctinct from HTTP requests and responses. In order to authenticate this traffic, it is necessary to authenticate the underlying transport (e.g., QUIC or TLS <a href="#RFC8446" class="xref">[RFC8446]</a>) instead of authenticate each request individually. This mechanism aims to supplement the HTTP Authentication Framework <a href="#RFC7235" class="xref">[RFC7235]</a>, not replace it.</p>
+<p id="rfc.section.1.p.3">Note that there is currently no mechanism for origin servers to request that user agents authenticate themselves using Transport Authentication, this is left as future work.</p>
+<h1 id="rfc.section.1.1">
+<a href="#rfc.section.1.1">1.1.</a> <a href="#conventions" id="conventions">Conventions and Definitions</a>
+</h1>
+<p id="rfc.section.1.1.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in BCP 14 <a href="#RFC2119" class="xref">[RFC2119]</a> <a href="#RFC8174" class="xref">[RFC8174]</a> when, and only when, they appear in all capitals, as shown here.</p>
+<p id="rfc.section.1.1.p.2">This document uses the Augmented BNF defined in <a href="#RFC5234" class="xref">[RFC5234]</a> and updated by <a href="#RFC7405" class="xref">[RFC7405]</a> along with the &#8220;#rule&#8221; extension defined in Section 7 of <a href="#RFC7230" class="xref">[RFC7230]</a>. The rules below are defined in <a href="#RFC3061" class="xref">[RFC3061]</a>, <a href="#RFC5234" class="xref">[RFC5234]</a>, <a href="#RFC7230" class="xref">[RFC7230]</a>, and <a href="#RFC7235" class="xref">[RFC7235]</a>:</p>
+<pre>
+  OWS           = &lt;OWS, see {{RFC7230}}, Section 3.2.3&gt;
+  quoted-string = &lt;quoted-string, see {{RFC7230}}, Section 3.2.6&gt;
+  token         = &lt;token, see {{RFC7230}}, Section 3.2.6&gt;
+  token68       = &lt;token, see {{RFC7235}}, Section 2.1&gt;
+  oid           = &lt;oid, see {{RFC3061}}, Section 2&gt;
+</pre>
+<h1 id="rfc.section.2">
+<a href="#rfc.section.2">2.</a> <a href="#compute-proof" id="compute-proof">Computing the Authentication Proof</a>
+</h1>
+<p id="rfc.section.2.p.1">This document only defines Transport Authentication for uses of HTTP with TLS.  This includes any use of HTTP over TLS as typically used for HTTP/2, or HTTP/3 where the transport protocol uses TLS as its authentication and key exchange mechanism <a href="#I-D.ietf-quic-tls" class="xref">[I-D.ietf-quic-tls]</a>.</p>
+<p id="rfc.section.2.p.2">The user agent leverages a TLS keying material exporter <a href="#RFC5705" class="xref">[RFC5705]</a> to generate a nonce which can be signed using the user-id&#8217;s key. The keying material exporter uses a label that starts with the characters &#8220;EXPORTER-HTTP-Transport-Authentication-&#8220; (see <a href="#schemes" class="xref">Section 4</a> for the labels and contexts used by each scheme). The TLS keying material exporter is used to generate a 32-byte key which is then used as a nonce.</p>
+<h1 id="rfc.section.3">
+<a href="#rfc.section.3">3.</a> <a href="#header-definition" id="header-definition">Header Field Definition</a>
+</h1>
+<p id="rfc.section.3.p.1">The &#8220;Transport-Authentication&#8221; header allows a user agent to authenticate its transport connection with an origin server.</p>
+<pre>
+  Transport-Authentication = transp-auth-scheme *( OWS ";" OWS parameter )
+  transp-auth-scheme       = token
+  parameter                = token "=" ( token / quoted-string )
+</pre>
+<h1 id="rfc.section.3.1">
+<a href="#rfc.section.3.1">3.1.</a> <a href="#u-directive" id="u-directive">The u Directive</a>
+</h1>
+<p id="rfc.section.3.1.p.1">The OPTIONAL &#8220;u&#8221; (user-id) directive specifies the user-id that the user agent wishes to authenticate. It is encoded using Base64 (Section 4 of <a href="#RFC4648" class="xref">[RFC4648]</a>).</p>
+<pre>
+    u = token68
+</pre>
+<h1 id="rfc.section.3.2">
+<a href="#rfc.section.3.2">3.2.</a> <a href="#p-directive" id="p-directive">The p Directive</a>
+</h1>
+<p id="rfc.section.3.2.p.1">The OPTIONAL &#8220;p&#8221; (proof) directive specifies the proof that the user agent provides to attest to possessing the credential that matches its user-id.  It is encoded using Base64 (Section 4 of <a href="#RFC4648" class="xref">[RFC4648]</a>).</p>
+<pre>
+    p = token68
+</pre>
+<h1 id="rfc.section.3.3">
+<a href="#rfc.section.3.3">3.3.</a> <a href="#a-directive" id="a-directive">The a Directive</a>
+</h1>
+<p id="rfc.section.3.3.p.1">The OPTIONAL &#8220;a&#8221; (algorithm) directive specifies the algorithm used to compute the proof transmitted in the &#8220;p&#8221; directive.</p>
+<pre>
+    a = oid
+</pre>
+<h1 id="rfc.section.4">
+<a href="#rfc.section.4">4.</a> <a href="#schemes" id="schemes">Transport Authentication Schemes</a>
+</h1>
+<p id="rfc.section.4.p.1">The Transport Authentication Framework allows defining Transport Authentication Schemes, which specify how to authenticate user-ids. This documents defined the &#8220;Signature&#8221; and &#8220;HMAC&#8221; schemes.</p>
+<h1 id="rfc.section.4.1">
+<a href="#rfc.section.4.1">4.1.</a> <a href="#signature" id="signature">Signature</a>
+</h1>
+<p id="rfc.section.4.1.p.1">The &#8220;Signature&#8221; Transport Authentication Scheme uses asymmetric cyptography.  User agents possess a user-id and a public/private key pair, and origin servers maintain a mapping of authorized user-ids to their associated public keys. When using this scheme, the &#8220;u&#8221;, &#8220;p&#8221;, and &#8220;a&#8221; directives are REQUIRED.  The TLS keying material export label for this scheme is &#8220;EXPORTER-HTTP-Transport-Authentication-Signature&#8221; and the associated context is empty. The nonce is then signed using the selected asymmetric signature algorithm and transmitted as the proof directive.</p>
+<p id="rfc.section.4.1.p.2">For example, the user-id &#8220;john.doe&#8221; authenticating using Ed25519 <a href="#RFC8410" class="xref">[RFC8410]</a> could produce the following header (lines are folded to fit):</p>
+<pre>
+Transport-Authentication: Signature u="am9obi5kb2U=";a=1.3.101.112;
+p="SW5zZXJ0IHNpZ25hdHVyZSBvZiBub25jZSBoZXJlIHdo
+aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
+</pre>
+<h1 id="rfc.section.4.2">
+<a href="#rfc.section.4.2">4.2.</a> <a href="#hmac" id="hmac">HMAC</a>
+</h1>
+<p id="rfc.section.4.2.p.1">The &#8220;HMAC&#8221; Transport Authentication Scheme uses symmetric cyptography.  User agents possess a user-id and a secret key, and origin servers maintain a mapping of authorized user-ids to their associated secret key. When using this scheme, the &#8220;u&#8221;, &#8220;p&#8221;, and &#8220;a&#8221; directives are REQUIRED.  The TLS keying material export label for this scheme is &#8220;EXPORTER-HTTP-Transport-Authentication-HMAC&#8221; and the associated context is empty. The nonce is then HMACed using the selected HMAC algorithm and transmitted as the proof directive.</p>
+<p id="rfc.section.4.2.p.2">For example, the user-id &#8220;john.doe&#8221; authenticating using HMAC-SHA-512 <a href="#RFC6234" class="xref">[RFC6234]</a> could produce the following header (lines are folded to fit):</p>
+<pre>
+Transport-Authentication: HMAC u="am9obi5kb2U=";a=2.16.840.1.101.3.4.2.3;
+p="SW5zZXJ0IEhNQUMgb2Ygbm9uY2UgaGVyZSB3aGljaCB0YWtl
+cyA1MTIgYml0cyBmb3IgU0hBLTUxMiEhISEhIQ=="
+</pre>
+<h1 id="rfc.section.5">
+<a href="#rfc.section.5">5.</a> <a href="#proxy" id="proxy">Proxy Considerations</a>
+</h1>
+<p id="rfc.section.5.p.1">Since Transport Authentication authenticates the underlying transport by leveraging TLS keying material exporters, it cannot be transparently forwarded by proxies that terminate TLS. However it can be sent over proxied connections when TLS is performed end-to-end (e.g., when using HTTP CONNECT proxies).</p>
+<h1 id="rfc.section.6">
+<a href="#rfc.section.6">6.</a> <a href="#security" id="security">Security Considerations</a>
+</h1>
+<p id="rfc.section.6.p.1">Transport Authentication allows a user-agent to authenticate to an origin server while guaranteeing freshness and without the need for the server to transmit a nonce to the user agent. This allows the server to accept authenticated clients without revealing that it supports or expects authentication for some resources.</p>
+<h1 id="rfc.section.7">
+<a href="#rfc.section.7">7.</a> <a href="#iana" id="iana">IANA Considerations</a>
+</h1>
+<h1 id="rfc.section.7.1">
+<a href="#rfc.section.7.1">7.1.</a> <a href="#iana-header" id="iana-header">Transport-Authentication Header Field</a>
+</h1>
+<p id="rfc.section.7.1.p.1">This document, if approved, requests IANA to register the &#8220;Transport-Authentication&#8221; header in the &#8220;Permanent Message Header Field Names&#8221; registry maintained at <a href="https://www.iana.org/assignments/message-headers/">https://www.iana.org/assignments/message-headers/</a>.</p>
+<pre>
+  +--------------------------+----------+--------------+---------------+
+  |    Header Field Name     | Protocol |    Status    |   Reference   |
+  +--------------------------+----------+--------------+---------------+
+  | Transport-Authentication |   http   | experimental | This document |
+  +--------------------------+----------+--------------+---------------+
+</pre>
+<h1 id="rfc.section.7.2">
+<a href="#rfc.section.7.2">7.2.</a> <a href="#iana-schemes" id="iana-schemes">Transport Authentication Schemes Registry</a>
+</h1>
+<p id="rfc.section.7.2.p.1">This document, if approved, requests IANA to create a new HTTP Transport Authentication Schemes Registry with the following entries:</p>
+<pre>
+  +---------------------------------+---------------+
+  | Transport Authentication Scheme |   Reference   |
+  +---------------------------------+---------------+
+  |            Signature            | This document |
+  +---------------------------------+---------------+
+  |              HMAC               | This document |
+  +---------------------------------+---------------+
+</pre>
+<h1 id="rfc.section.7.3">
+<a href="#rfc.section.7.3">7.3.</a> <a href="#iana-exporter-label" id="iana-exporter-label">TLS Keying Material Exporter Labels</a>
+</h1>
+<p id="rfc.section.7.3.p.1">This document, if approved, requests IANA to register the following entries in the &#8220;TLS Exporter Labels&#8221; registry maintained at <a href="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#exporter-labels">https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#exporter-labels</a></p>
+<pre>
+  +--------------------------------------------------+
+  |                       Value                      |
+  +--------------------------------------------------+
+  | EXPORTER-HTTP-Transport-Authentication-Signature |
+  +--------------------------------------------------+
+  | EXPORTER-HTTP-Transport-Authentication-HMAC      |
+  +--------------------------------------------------+
+</pre>
+<p id="rfc.section.7.3.p.2">Both of these entries are listed with the following qualifiers:</p>
+<pre>
+  +---------+-------------+---------------+
+  | DTLS-OK | Recommended |   Reference   |
+  +---------+-------------+---------------+
+  |    N    |      Y      | This document |
+  +---------+-------------+---------------+
+</pre>
+<h1 id="rfc.references">
+<a href="#rfc.references">8.</a> References</h1>
+<h1 id="rfc.references.1">
+<a href="#rfc.references.1">8.1.</a> Normative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="RFC2119">[RFC2119]</b></td>
+<td class="top">
+<a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC3061">[RFC3061]</b></td>
+<td class="top">
+<a>Mealling, M.</a>, "<a href="https://tools.ietf.org/html/rfc3061">A URN Namespace of Object Identifiers</a>", RFC 3061, DOI 10.17487/RFC3061, February 2001.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC4648">[RFC4648]</b></td>
+<td class="top">
+<a>Josefsson, S.</a>, "<a href="https://tools.ietf.org/html/rfc4648">The Base16, Base32, and Base64 Data Encodings</a>", RFC 4648, DOI 10.17487/RFC4648, October 2006.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC5234">[RFC5234]</b></td>
+<td class="top">
+<a>Crocker, D.</a> and <a>P. Overell</a>, "<a href="https://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>", STD 68, RFC 5234, DOI 10.17487/RFC5234, January 2008.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC5705">[RFC5705]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/rfc5705">Keying Material Exporters for Transport Layer Security (TLS)</a>", RFC 5705, DOI 10.17487/RFC5705, March 2010.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7230">[RFC7230]</b></td>
+<td class="top">
+<a>Fielding, R.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7230">Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing</a>", RFC 7230, DOI 10.17487/RFC7230, June 2014.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7235">[RFC7235]</b></td>
+<td class="top">
+<a>Fielding, R.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7235">Hypertext Transfer Protocol (HTTP/1.1): Authentication</a>", RFC 7235, DOI 10.17487/RFC7235, June 2014.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7405">[RFC7405]</b></td>
+<td class="top">
+<a>Kyzivat, P.</a>, "<a href="https://tools.ietf.org/html/rfc7405">Case-Sensitive String Support in ABNF</a>", RFC 7405, DOI 10.17487/RFC7405, December 2014.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8174">[RFC8174]</b></td>
+<td class="top">
+<a>Leiba, B.</a>, "<a href="https://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8446">[RFC8446]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/rfc8446">The Transport Layer Security (TLS) Protocol Version 1.3</a>", RFC 8446, DOI 10.17487/RFC8446, August 2018.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.references.2">
+<a href="#rfc.references.2">8.2.</a> Informative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="I-D.ietf-quic-http">[I-D.ietf-quic-http]</b></td>
+<td class="top">
+<a>Bishop, M.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-http-20">Hypertext Transfer Protocol Version 3 (HTTP/3)</a>", Internet-Draft draft-ietf-quic-http-20, April 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.ietf-quic-tls">[I-D.ietf-quic-tls]</b></td>
+<td class="top">
+<a>Thomson, M.</a> and <a>S. Turner</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-tls-20">Using TLS to Secure QUIC</a>", Internet-Draft draft-ietf-quic-tls-20, April 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.ietf-quic-transport">[I-D.ietf-quic-transport]</b></td>
+<td class="top">
+<a>Iyengar, J.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-transport-20">QUIC: A UDP-Based Multiplexed and Secure Transport</a>", Internet-Draft draft-ietf-quic-transport-20, April 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.pauly-quic-datagram">[I-D.pauly-quic-datagram]</b></td>
+<td class="top">
+<a>Pauly, T.</a>, <a>Kinnear, E.</a> and <a>D. Schinazi</a>, "<a href="https://tools.ietf.org/html/draft-pauly-quic-datagram-03">An Unreliable Datagram Extension to QUIC</a>", Internet-Draft draft-pauly-quic-datagram-03, July 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.schinazi-masque">[I-D.schinazi-masque]</b></td>
+<td class="top">
+<a>Schinazi, D.</a>, "<a href="https://tools.ietf.org/html/draft-schinazi-masque-00">The MASQUE Protocol</a>", Internet-Draft draft-schinazi-masque-00, February 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.vvv-webtransport-http3">[I-D.vvv-webtransport-http3]</b></td>
+<td class="top">
+<a>Vasiliev, V.</a>, "<a href="https://tools.ietf.org/html/draft-vvv-webtransport-http3-00">WebTransport over HTTP/3</a>", Internet-Draft draft-vvv-webtransport-http3-00, May 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6234">[RFC6234]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a> and <a>T. Hansen</a>, "<a href="https://tools.ietf.org/html/rfc6234">US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</a>", RFC 6234, DOI 10.17487/RFC6234, May 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8410">[RFC8410]</b></td>
+<td class="top">
+<a>Josefsson, S.</a> and <a>J. Schaad</a>, "<a href="https://tools.ietf.org/html/rfc8410">Algorithm Identifiers for Ed25519, Ed448, X25519, and X448 for Use in the Internet X.509 Public Key Infrastructure</a>", RFC 8410, DOI 10.17487/RFC8410, August 2018.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.acknowledgments"><a href="#rfc.acknowledgments">Acknowledgments</a></h1>
+<p id="rfc.section.A.p.1">The authors would like to thank many members of the IETF community, as this document is the fruit of many hallway conversations.</p>
+<h1 id="rfc.authors"><a href="#rfc.authors">Author's Address</a></h1>
+<div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">David Schinazi</span> 
+	  <span class="n hidden">
+		<span class="family-name">Schinazi</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Google LLC</span>
+	<span class="adr">
+	  <span class="vcardline">1600 Amphitheatre Parkway</span>
+
+	  <span class="vcardline">
+		<span class="locality">Mountain View, California 94043</span>,  
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline">United States of America</span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:dschinazi.ietf@gmail.com">dschinazi.ietf@gmail.com</a></span>
+
+  </address>
+</div>
+
+</body>
+</html>

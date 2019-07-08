@@ -301,13 +301,14 @@ ul.toc li {
 <link href="#rfc.section.5.5" rel="Chapter" title="5.5 IP Proxying">
 <link href="#rfc.section.5.6" rel="Chapter" title="5.6 Path MTU Discovery">
 <link href="#rfc.section.5.7" rel="Chapter" title="5.7 Service Registration">
-<link href="#rfc.section.6" rel="Chapter" title="6 Security Considerations">
-<link href="#rfc.section.6.1" rel="Chapter" title="6.1 Traffic Analysis">
-<link href="#rfc.section.6.2" rel="Chapter" title="6.2 Untrusted Servers">
-<link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations">
-<link href="#rfc.references" rel="Chapter" title="8 References">
-<link href="#rfc.references.1" rel="Chapter" title="8.1 Normative References">
-<link href="#rfc.references.2" rel="Chapter" title="8.2 Informative References">
+<link href="#rfc.section.6" rel="Chapter" title="6 Operation over HTTP/2">
+<link href="#rfc.section.7" rel="Chapter" title="7 Security Considerations">
+<link href="#rfc.section.7.1" rel="Chapter" title="7.1 Traffic Analysis">
+<link href="#rfc.section.7.2" rel="Chapter" title="7.2 Untrusted Servers">
+<link href="#rfc.section.8" rel="Chapter" title="8 IANA Considerations">
+<link href="#rfc.references" rel="Chapter" title="9 References">
+<link href="#rfc.references.1" rel="Chapter" title="9.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="9.2 Informative References">
 <link href="#rfc.acknowledgments" rel="Chapter">
 <link href="#rfc.design_justifications" rel="Chapter">
 <link href="#rfc.authors" rel="Chapter">
@@ -318,7 +319,7 @@ ul.toc li {
 
   <meta name="dct.creator" content="Schinazi, D." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-schinazi-masque" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-06-12" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-07-08" />
   <meta name="dct.abstract" content="This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list masque@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/masque-drafts." />
   <meta name="description" content="This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list masque@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/masque-drafts." />
 
@@ -339,10 +340,10 @@ ul.toc li {
 </tr>
 <tr>
 <td class="left">Intended status: Experimental</td>
-<td class="right">June 12, 2019</td>
+<td class="right">July 08, 2019</td>
 </tr>
 <tr>
-<td class="left">Expires: December 14, 2019</td>
+<td class="left">Expires: January 9, 2020</td>
 <td class="right"></td>
 </tr>
 
@@ -360,7 +361,7 @@ ul.toc li {
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on December 14, 2019.</p>
+<p>This Internet-Draft will expire on January 9, 2020.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -410,19 +411,21 @@ ul.toc li {
 </li>
 <li>5.7.   <a href="#rfc.section.5.7">Service Registration</a>
 </li>
-</ul><li>6.   <a href="#rfc.section.6">Security Considerations</a>
+</ul><li>6.   <a href="#rfc.section.6">Operation over HTTP/2</a>
 </li>
-<ul><li>6.1.   <a href="#rfc.section.6.1">Traffic Analysis</a>
+<li>7.   <a href="#rfc.section.7">Security Considerations</a>
 </li>
-<li>6.2.   <a href="#rfc.section.6.2">Untrusted Servers</a>
+<ul><li>7.1.   <a href="#rfc.section.7.1">Traffic Analysis</a>
 </li>
-</ul><li>7.   <a href="#rfc.section.7">IANA Considerations</a>
+<li>7.2.   <a href="#rfc.section.7.2">Untrusted Servers</a>
 </li>
-<li>8.   <a href="#rfc.references">References</a>
+</ul><li>8.   <a href="#rfc.section.8">IANA Considerations</a>
 </li>
-<ul><li>8.1.   <a href="#rfc.references.1">Normative References</a>
+<li>9.   <a href="#rfc.references">References</a>
 </li>
-<li>8.2.   <a href="#rfc.references.2">Informative References</a>
+<ul><li>9.1.   <a href="#rfc.references.1">Normative References</a>
+</li>
+<li>9.2.   <a href="#rfc.references.2">Informative References</a>
 </li>
 </ul><li><a href="#rfc.acknowledgments">Acknowledgments</a>
 </li>
@@ -441,7 +444,7 @@ ul.toc li {
 <p id="rfc.section.1.p.2">This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list <a href="mailto:masque@ietf.org">masque@ietf.org</a> or on the GitHub repository which contains the draft: <a href="https://github.com/DavidSchinazi/masque-drafts">https://github.com/DavidSchinazi/masque-drafts</a>.</p>
 <p id="rfc.section.1.p.3">MASQUE leverages the efficient head-of-line blocking prevention features of the QUIC transport protocol <a href="#I-D.ietf-quic-transport" class="xref">[I-D.ietf-quic-transport]</a> when MASQUE is used in an HTTP/3 <a href="#I-D.ietf-quic-http" class="xref">[I-D.ietf-quic-http]</a> server. MASQUE can also run in an HTTP/2 server <a href="#RFC7540" class="xref">[RFC7540]</a> but at a performance cost.</p>
 <h1 id="rfc.section.1.1">
-<a href="#rfc.section.1.1">1.1.</a> <a href="#conventions-and-definitions" id="conventions-and-definitions">Conventions and Definitions</a>
+<a href="#rfc.section.1.1">1.1.</a> <a href="#conventions" id="conventions">Conventions and Definitions</a>
 </h1>
 <p id="rfc.section.1.1.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in BCP 14 <a href="#RFC2119" class="xref">[RFC2119]</a> <a href="#RFC8174" class="xref">[RFC8174]</a> when, and only when, they appear in all capitals, as shown here.</p>
 <h1 id="rfc.section.2">
@@ -449,19 +452,19 @@ ul.toc li {
 </h1>
 <p id="rfc.section.2.p.1">There are currently multiple usage scenarios that can benefit from MASQUE.</p>
 <h1 id="rfc.section.2.1">
-<a href="#rfc.section.2.1">2.1.</a> <a href="#protection-from-network-providers" id="protection-from-network-providers">Protection from Network Providers</a>
+<a href="#rfc.section.2.1">2.1.</a> <a href="#protection-providers" id="protection-providers">Protection from Network Providers</a>
 </h1>
 <p id="rfc.section.2.1.p.1">Some users may wish to obfuscate the destination of their network traffic from their network provider. This prevents network providers from using data harvested from this network traffic in ways the user did not intend.</p>
 <h1 id="rfc.section.2.2">
-<a href="#rfc.section.2.2">2.2.</a> <a href="#protection-from-web-servers" id="protection-from-web-servers">Protection from Web Servers</a>
+<a href="#rfc.section.2.2">2.2.</a> <a href="#protection-servers" id="protection-servers">Protection from Web Servers</a>
 </h1>
 <p id="rfc.section.2.2.p.1">There are many clients who would rather not establish a direct connection to web servers, for example to avoid location tracking. The clients can do that by running their traffic through a MASQUE server. The web server will only see the IP address of the MASQUE server, not that of the client.</p>
 <h1 id="rfc.section.2.3">
-<a href="#rfc.section.2.3">2.3.</a> <a href="#making-a-home-server-available" id="making-a-home-server-available">Making a Home Server Available</a>
+<a href="#rfc.section.2.3">2.3.</a> <a href="#home-server" id="home-server">Making a Home Server Available</a>
 </h1>
 <p id="rfc.section.2.3.p.1">It is often difficult to connect to a home server. The IP address might change over time. Firewalls in the home router or in the network may block incoming connections. Using a MASQUE server as a rendez-vous point helps resolve these issues.</p>
 <h1 id="rfc.section.2.4">
-<a href="#rfc.section.2.4">2.4.</a> <a href="#onion-routing" id="onion-routing">Onion Routing</a>
+<a href="#rfc.section.2.4">2.4.</a> <a href="#onion" id="onion">Onion Routing</a>
 </h1>
 <p id="rfc.section.2.4.p.1">Routing traffic through a MASQUE server only provides partial protection against tracking, because the MASQUE server knows the address of the client.  Onion routing as it exists today mitigates this issue for TCP/TLS. A MASQUE server could allow onion routing over QUIC.</p>
 <p id="rfc.section.2.4.p.2">In this scenario, the client establishes a connection to the MASQUE server, then through that to another MASQUE server, etc. This creates a tree of MASQUE servers rooted at the client. QUIC connections are mapped to a specific branch of the tree. The first MASQUE server knows the actual address of the client, but the other MASQUE servers only know the address of the previous server.  To assure reasonable privacy, the path should include at least 3 MASQUE servers.</p>
@@ -470,19 +473,19 @@ ul.toc li {
 </h1>
 <p id="rfc.section.3.p.1">This section describes the goals and requirements chosen for the MASQUE protocol.</p>
 <h1 id="rfc.section.3.1">
-<a href="#rfc.section.3.1">3.1.</a> <a href="#invisibility-of-usage" id="invisibility-of-usage">Invisibility of Usage</a>
+<a href="#rfc.section.3.1">3.1.</a> <a href="#invisibility-usage" id="invisibility-usage">Invisibility of Usage</a>
 </h1>
-<p id="rfc.section.3.1.p.1">An authenticated client using MASQUE features appears to observers as a regular HTTPS client. Observers only see that HTTP/3 or HTTP/2 is being used over an encrypted channel. No part of the exchanges between client and server may stick out. Note that traffic analysis is discussed in <a href="#traffic-analysis" class="xref">Section 6.1</a>.</p>
+<p id="rfc.section.3.1.p.1">An authenticated client using MASQUE features appears to observers as a regular HTTPS client. Observers only see that HTTP/3 or HTTP/2 is being used over an encrypted channel. No part of the exchanges between client and server may stick out. Note that traffic analysis is discussed in <a href="#traffic-analysis" class="xref">Section 7.1</a>.</p>
 <h1 id="rfc.section.3.2">
-<a href="#rfc.section.3.2">3.2.</a> <a href="#invisibility-of-the-server" id="invisibility-of-the-server">Invisibility of the Server</a>
+<a href="#rfc.section.3.2">3.2.</a> <a href="#invisibility-server" id="invisibility-server">Invisibility of the Server</a>
 </h1>
 <p id="rfc.section.3.2.p.1">To anyone without private keys, the server is indistinguishable from a regular web server. It is impossible to send an unauthenticated probe that the server would reply to differently than if it were a normal web server.</p>
 <h1 id="rfc.section.3.3">
-<a href="#rfc.section.3.3">3.3.</a> <a href="#fallback-to-http2-over-tls-over-tcp" id="fallback-to-http2-over-tls-over-tcp">Fallback to HTTP/2 over TLS over TCP</a>
+<a href="#rfc.section.3.3">3.3.</a> <a href="#fallback-h2" id="fallback-h2">Fallback to HTTP/2 over TLS over TCP</a>
 </h1>
-<p id="rfc.section.3.3.p.1">When QUIC is blocked, MASQUE can run over TCP and still satisfy previous requirements. Note that in this scenario performance may be negatively impacted. MASQUE implementations using HTTP/3 MUST support the fallback to HTTP/2 to avoid incentivizing censors to block HTTP/3 or QUIC.</p>
+<p id="rfc.section.3.3.p.1">When QUIC is blocked, MASQUE can run over TCP and still satisfy previous requirements. Note that in this scenario performance may be negatively impacted.</p>
 <h1 id="rfc.section.4">
-<a href="#rfc.section.4">4.</a> <a href="#overview-of-the-mechanism" id="overview-of-the-mechanism">Overview of the Mechanism</a>
+<a href="#rfc.section.4">4.</a> <a href="#overview" id="overview">Overview of the Mechanism</a>
 </h1>
 <p id="rfc.section.4.p.1">The server runs an HTTPS server on port 443, and has a valid TLS certificate for its domain. The client has a public/private key pair, and the server maintains a list of authorized MASQUE clients, and their public key.  (Alternatively, clients can also be authenticated using a shared secret.) The client starts by establishing a regular HTTPS connection to the server (HTTP/3 over QUIC or HTTP/2 over TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> over TCP), and validates the server&#8217;s TLS certificate as it normally would for HTTPS. If validation fails, the connection is aborted. The client then uses a TLS keying material exporter <a href="#RFC5705" class="xref">[RFC5705]</a> with label &#8220;EXPORTER-masque&#8221; and no context to generate a 32-byte key. This key is then used as a nonce to prevent replay attacks. The client then sends an HTTP CONNECT request for &#8220;/.well-known/masque/initial&#8221; with the :protocol pseudo-header field set to &#8220;masque&#8221;, and a &#8220;Masque-Authentication:&#8221; header. The MASQUE authentication header differs from the HTTP &#8220;Authorization&#8221; header in that it applies to the underlying connection instead of being per-request. It can use either a shared secret or asymmetric authentication. The asymmetric variant uses authentication method &#8220;PublicKey&#8221;, and it transmits a signature of the nonce with the client&#8217;s public key encoded in base64 format, followed by other information such as the client username and signature algorithm OID. The symmetric variant uses authentication method &#8220;HMAC&#8221; and transmits an HMAC of the nonce with the shared secret instead of a signature. For example this header could look like:</p>
 <div id="rfc.figure.1"></div>
@@ -499,7 +502,7 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <p class="figure">Figure 1: MASQUE Authentication Format Example</p>
 <p id="rfc.section.4.p.2">When the server receives this CONNECT request, it verifies the signature and if that fails responds with code &#8220;405 Method Not Allowed&#8221;, making sure its response is the same as what it would return for any unexpected CONNECT request. If the signature verifies, the server responds with code &#8220;101 Switching Protocols&#8221;, and from then on this HTTP stream is now dedicated to the MASQUE protocol. That protocol provides a reliable bidirectional message exchange mechanism, which is used by the client and server to negotiate what protocol options are supported and enabled by policy, and client VPN configuration such as IP addresses. When using QUIC, this protocol also allows endpoints to negotiate the use of QUIC extensions, such as support for the DATAGRAM extension <a href="#I-D.pauly-quic-datagram" class="xref">[I-D.pauly-quic-datagram]</a>.</p>
 <h1 id="rfc.section.5">
-<a href="#rfc.section.5">5.</a> <a href="#mechanisms-the-server-can-advertise-to-authenticated-clients" id="mechanisms-the-server-can-advertise-to-authenticated-clients">Mechanisms the Server Can Advertise to Authenticated Clients</a>
+<a href="#rfc.section.5">5.</a> <a href="#mechanisms" id="mechanisms">Mechanisms the Server Can Advertise to Authenticated Clients</a>
 </h1>
 <p id="rfc.section.5.p.1">Once a server has authenticated the client&#8217;s MASQUE CONNECT request, it advertises services that the client may use.</p>
 <h1 id="rfc.section.5.1">
@@ -507,25 +510,25 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 </h1>
 <p id="rfc.section.5.1.p.1">The client can make proxied HTTP requests through the server to other servers. In practice this will mean using the CONNECT method to establish a stream over which to run TLS to a different remote destination.</p>
 <h1 id="rfc.section.5.2">
-<a href="#rfc.section.5.2">5.2.</a> <a href="#dns-over-https" id="dns-over-https">DNS over HTTPS</a>
+<a href="#rfc.section.5.2">5.2.</a> <a href="#doh" id="doh">DNS over HTTPS</a>
 </h1>
 <p id="rfc.section.5.2.p.1">The client can send DNS queries using DNS over HTTPS (DoH) <a href="#RFC8484" class="xref">[RFC8484]</a> to the MASQUE server.</p>
 <h1 id="rfc.section.5.3">
-<a href="#rfc.section.5.3">5.3.</a> <a href="#udp-proxying" id="udp-proxying">UDP Proxying</a>
+<a href="#rfc.section.5.3">5.3.</a> <a href="#udp-proxy" id="udp-proxy">UDP Proxying</a>
 </h1>
 <p id="rfc.section.5.3.p.1">In order to support WebRTC or QUIC to further servers, clients need a way to relay UDP onwards to a remote server. In practice for most widely deployed protocols other than DNS, this involves many datagrams over the same ports.  Therefore this mechanism implements that efficiently: clients can use the MASQUE protocol stream to request an UDP association to an IP address and UDP port pair. In QUIC, the server would reply with a DATAGRAM_ID that the client can then use to have UDP datagrams sent to this remote server.  Datagrams are then simply transferred between the DATAGRAMs with this ID and the outer server. There will also be a message on the MASQUE protocol stream to request shutdown of a UDP association to save resources when it is no longer needed. When running over TCP, the client opens a new stream with a CONNECT request to the &#8220;masque-udp-proxy&#8221; protocol and then sends datagrams encapsulated inside the stream with a two-byte length prefix in network byte order. The target IP and port are sent as part of the URL query. Resetting that stream instructs the server to release any associates resources.</p>
 <h1 id="rfc.section.5.4">
-<a href="#rfc.section.5.4">5.4.</a> <a href="#quic-proxying" id="quic-proxying">QUIC Proxying</a>
+<a href="#rfc.section.5.4">5.4.</a> <a href="#quic-proxy" id="quic-proxy">QUIC Proxying</a>
 </h1>
 <p id="rfc.section.5.4.p.1">By leveraging QUIC client connection IDs, a MASQUE server can act as a QUIC proxy while only using one UDP port. The server informs the client of a scheme client connection IDs (for example, random of a minimum length or vended by the MASQUE server) and then the server can forward those packets to further web servers.</p>
 <p id="rfc.section.5.4.p.2">This mechanism can elide the connection IDs on the link between the client and MASQUE server by negotiating a mapping between DATAGRAM_IDs and the tuple (client connection ID, server connection ID, server IP address, server port).</p>
 <p id="rfc.section.5.4.p.3">Compared to UDP proxying, this mode has the advantage of only requiring one UDP port to be open on the MASQUE server, and can lower the overhead on the link between client and MASQUE server by compressing connection IDs.</p>
 <h1 id="rfc.section.5.5">
-<a href="#rfc.section.5.5">5.5.</a> <a href="#ip-proxying" id="ip-proxying">IP Proxying</a>
+<a href="#rfc.section.5.5">5.5.</a> <a href="#ip-proxy" id="ip-proxy">IP Proxying</a>
 </h1>
 <p id="rfc.section.5.5.p.1">For the rare cases where the previous mechanisms are not sufficient, proxying can be performed at the IP layer. This would use a different DATAGRAM_ID and IP datagrams would be encoded inside it without framing. Over TCP, a dedicated stream with two byte length prefix would be used. The server can inspect the IP datagram to look for the destination address in the IP header.</p>
 <h1 id="rfc.section.5.6">
-<a href="#rfc.section.5.6">5.6.</a> <a href="#path-mtu-discovery" id="path-mtu-discovery">Path MTU Discovery</a>
+<a href="#rfc.section.5.6">5.6.</a> <a href="#pmtud" id="pmtud">Path MTU Discovery</a>
 </h1>
 <p id="rfc.section.5.6.p.1">In the main deployment of this mechanism, QUIC will be used between client and server, and that will most likely be the smallest MTU link in the path due to QUIC header and authentication tag overhead. The client is responsible for not sending overly large UDP packets and notifying the server of the low MTU. Therefore PMTUD is currently seen as out of scope of this document.</p>
 <h1 id="rfc.section.5.7">
@@ -534,22 +537,27 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <p id="rfc.section.5.7.p.1">MASQUE can be used to make a home server accessible on the wide area. The home server authenticates to the MASQUE server and registers a domain name it wishes to serve. The MASQUE server can then forward any traffic it receives for that domain name (by inspecting the TLS Server Name Indication (SNI) extension) to the home server. This received traffic is not authenticated and it allows non-modified clients to communicate with the home server without knowing it is not colocated with the MASQUE server.</p>
 <p id="rfc.section.5.7.p.2">To help obfuscate the home server, deployments can use Encrypted Server Name Indication (ESNI) <a href="#I-D.ietf-tls-esni" class="xref">[I-D.ietf-tls-esni]</a>. That will require the MASQUE server sending the cleartext SNI to the home server.</p>
 <h1 id="rfc.section.6">
-<a href="#rfc.section.6">6.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
+<a href="#rfc.section.6">6.</a> <a href="#http2" id="http2">Operation over HTTP/2</a>
 </h1>
-<p id="rfc.section.6.p.1">Here be dragons. TODO: slay the dragons.</p>
-<h1 id="rfc.section.6.1">
-<a href="#rfc.section.6.1">6.1.</a> <a href="#traffic-analysis" id="traffic-analysis">Traffic Analysis</a>
-</h1>
-<p id="rfc.section.6.1.p.1">While MASQUE ensures that proxied traffic appears similar to regular HTTP traffic, it doesn&#8217;t inherently defeat traffic analysis. However, the fact that MASQUE leverages QUIC allows it to segment STREAM frames over multiple packets and add PADDING frames to change the observable characteristics of its encrypted traffic. The exact details of how to change traffic patterns to defeat traffic analysis is considered an open research question and is out of scope for this document.</p>
-<p id="rfc.section.6.1.p.2">When multiple MASQUE servers are available, a client can leverage QUIC connection migration to seamlessly transition its end-to-end QUIC connections by treating separate MASQUE servers as different paths. This could afford an additional level of obfuscation in hopes of rendering traffic analysis less effective.</p>
-<h1 id="rfc.section.6.2">
-<a href="#rfc.section.6.2">6.2.</a> <a href="#untrusted-servers" id="untrusted-servers">Untrusted Servers</a>
-</h1>
-<p id="rfc.section.6.2.p.1">As with any proxy or VPN technology, MASQUE hides some of the client&#8217;s private information (such as who they are communicating with) from their network provider by transferring that information to the MASQUE server. It is paramount that clients only use MASQUE servers that they trust, as a malicious actor could easily setup a MASQUE server and advertise it as a privacy solution in hopes of attracting users to send it their traffic.</p>
+<p id="rfc.section.6.p.1">MASQUE implementations using HTTP/3 MUST support the fallback to HTTP/2 to avoid incentivizing censors to block HTTP/3 or QUIC. When running over HTTP/2, MASQUE uses the Extended CONNECT method to negotiate the use of datagrams over an HTTP/2 stream <a href="#I-D.kinnear-httpbis-http2-transport" class="xref">[I-D.kinnear-httpbis-http2-transport]</a>.</p>
+<p id="rfc.section.6.p.2">MASQUE implementations SHOULD discover that HTTP/3 is available (as opposed to only HTTP/2) using the same mechanism as regular HTTP traffic. This current standardized mechanism for this is HTTP Alternative Services <a href="#RFC7838" class="xref">[RFC7838]</a>, but future mechanisms such as <a href="#I-D.schwartz-httpbis-dns-alt-svc" class="xref">[I-D.schwartz-httpbis-dns-alt-svc]</a> can be used if they become widespread.</p>
 <h1 id="rfc.section.7">
-<a href="#rfc.section.7">7.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+<a href="#rfc.section.7">7.</a> <a href="#security" id="security">Security Considerations</a>
 </h1>
-<p id="rfc.section.7.p.1">We will need to register:</p>
+<p id="rfc.section.7.p.1">Here be dragons. TODO: slay the dragons.</p>
+<h1 id="rfc.section.7.1">
+<a href="#rfc.section.7.1">7.1.</a> <a href="#traffic-analysis" id="traffic-analysis">Traffic Analysis</a>
+</h1>
+<p id="rfc.section.7.1.p.1">While MASQUE ensures that proxied traffic appears similar to regular HTTP traffic, it doesn&#8217;t inherently defeat traffic analysis. However, the fact that MASQUE leverages QUIC allows it to segment STREAM frames over multiple packets and add PADDING frames to change the observable characteristics of its encrypted traffic. The exact details of how to change traffic patterns to defeat traffic analysis is considered an open research question and is out of scope for this document.</p>
+<p id="rfc.section.7.1.p.2">When multiple MASQUE servers are available, a client can leverage QUIC connection migration to seamlessly transition its end-to-end QUIC connections by treating separate MASQUE servers as different paths. This could afford an additional level of obfuscation in hopes of rendering traffic analysis less effective.</p>
+<h1 id="rfc.section.7.2">
+<a href="#rfc.section.7.2">7.2.</a> <a href="#untrusted-servers" id="untrusted-servers">Untrusted Servers</a>
+</h1>
+<p id="rfc.section.7.2.p.1">As with any proxy or VPN technology, MASQUE hides some of the client&#8217;s private information (such as who they are communicating with) from their network provider by transferring that information to the MASQUE server. It is paramount that clients only use MASQUE servers that they trust, as a malicious actor could easily setup a MASQUE server and advertise it as a privacy solution in hopes of attracting users to send it their traffic.</p>
+<h1 id="rfc.section.8">
+<a href="#rfc.section.8">8.</a> <a href="#iana" id="iana">IANA Considerations</a>
+</h1>
+<p id="rfc.section.8.p.1">We will need to register:</p>
 <p></p>
 
 <ul><li>the TLS keying material exporter label &#8220;EXPORTER-masque&#8221; (spec required)</li></ul>
@@ -565,11 +573,11 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <p></p>
 
 <ul><li>The &#8220;masque&#8221; and &#8220;masque-udp-proxy&#8221; extended HTTP CONNECT protocols</li></ul>
-<p id="rfc.section.7.p.9">We will also need to define the MASQUE control protocol and that will be likely to define new registries of its own.</p>
+<p id="rfc.section.8.p.9">We will also need to define the MASQUE control protocol and that will be likely to define new registries of its own.</p>
 <h1 id="rfc.references">
-<a href="#rfc.references">8.</a> References</h1>
+<a href="#rfc.references">9.</a> References</h1>
 <h1 id="rfc.references.1">
-<a href="#rfc.references.1">8.1.</a> Normative References</h1>
+<a href="#rfc.references.1">9.1.</a> Normative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="I-D.ietf-quic-http">[I-D.ietf-quic-http]</b></td>
@@ -582,9 +590,14 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <a>Iyengar, J.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-transport-20">QUIC: A UDP-Based Multiplexed and Secure Transport</a>", Internet-Draft draft-ietf-quic-transport-20, April 2019.</td>
 </tr>
 <tr>
+<td class="reference"><b id="I-D.kinnear-httpbis-http2-transport">[I-D.kinnear-httpbis-http2-transport]</b></td>
+<td class="top">
+<a>Kinnear, E.</a> and <a>T. Pauly</a>, "<a href="https://tools.ietf.org/html/draft-kinnear-httpbis-http2-transport-01">Using HTTP/2 as a Transport for Arbitrary Bytestreams</a>", Internet-Draft draft-kinnear-httpbis-http2-transport-01, March 2019.</td>
+</tr>
+<tr>
 <td class="reference"><b id="I-D.pauly-quic-datagram">[I-D.pauly-quic-datagram]</b></td>
 <td class="top">
-<a>Pauly, T.</a>, <a>Kinnear, E.</a> and <a>D. Schinazi</a>, "<a href="https://tools.ietf.org/html/draft-pauly-quic-datagram-02">An Unreliable Datagram Extension to QUIC</a>", Internet-Draft draft-pauly-quic-datagram-02, February 2019.</td>
+<a>Pauly, T.</a>, <a>Kinnear, E.</a> and <a>D. Schinazi</a>, "<a href="https://tools.ietf.org/html/draft-pauly-quic-datagram-03">An Unreliable Datagram Extension to QUIC</a>", Internet-Draft draft-pauly-quic-datagram-03, July 2019.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
@@ -600,6 +613,11 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <td class="reference"><b id="RFC7540">[RFC7540]</b></td>
 <td class="top">
 <a>Belshe, M.</a>, <a>Peon, R.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/rfc7540">Hypertext Transfer Protocol Version 2 (HTTP/2)</a>", RFC 7540, DOI 10.17487/RFC7540, May 2015.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7838">[RFC7838]</b></td>
+<td class="top">
+<a>Nottingham, M.</a>, <a>McManus, P.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7838">HTTP Alternative Services</a>", RFC 7838, DOI 10.17487/RFC7838, April 2016.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC8174">[RFC8174]</b></td>
@@ -618,7 +636,7 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 </tr>
 </tbody></table>
 <h1 id="rfc.references.2">
-<a href="#rfc.references.2">8.2.</a> Informative References</h1>
+<a href="#rfc.references.2">9.2.</a> Informative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="I-D.ietf-httpbis-http2-secondary-certs">[I-D.ietf-httpbis-http2-secondary-certs]</b></td>
@@ -634,6 +652,11 @@ aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 <td class="reference"><b id="I-D.pardue-httpbis-http-network-tunnelling">[I-D.pardue-httpbis-http-network-tunnelling]</b></td>
 <td class="top">
 <a>Pardue, L.</a>, "<a href="https://tools.ietf.org/html/draft-pardue-httpbis-http-network-tunnelling-01">HTTP-initiated Network Tunnelling (HiNT)</a>", Internet-Draft draft-pardue-httpbis-http-network-tunnelling-01, October 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.schwartz-httpbis-dns-alt-svc">[I-D.schwartz-httpbis-dns-alt-svc]</b></td>
+<td class="top">
+<a>Schwartz, B.</a> and <a>M. Bishop</a>, "<a href="https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc-02">Finding HTTP Alternative Services via the Domain Name Service</a>", Internet-Draft draft-schwartz-httpbis-dns-alt-svc-02, April 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.schwartz-httpbis-helium">[I-D.schwartz-httpbis-helium]</b></td>

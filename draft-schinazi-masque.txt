@@ -4,8 +4,8 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                              June 12, 2019
-Expires: December 14, 2019
+Intended status: Experimental                              July 08, 2019
+Expires: January 9, 2020
 
 
                           The MASQUE Protocol
@@ -47,15 +47,15 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 14, 2019.
+   This Internet-Draft will expire on January 9, 2020.
 
 
 
 
 
-Schinazi                Expires December 14, 2019               [Page 1]
+Schinazi                 Expires January 9, 2020                [Page 1]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
 
 Copyright Notice
@@ -95,24 +95,26 @@ Table of Contents
      5.5.  IP Proxying . . . . . . . . . . . . . . . . . . . . . . .   7
      5.6.  Path MTU Discovery  . . . . . . . . . . . . . . . . . . .   7
      5.7.  Service Registration  . . . . . . . . . . . . . . . . . .   8
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
-     6.1.  Traffic Analysis  . . . . . . . . . . . . . . . . . . . .   8
-     6.2.  Untrusted Servers . . . . . . . . . . . . . . . . . . . .   8
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .  10
-     8.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . .  11
-   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .  11
+   6.  Operation over HTTP/2 . . . . . . . . . . . . . . . . . . . .   8
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+     7.1.  Traffic Analysis  . . . . . . . . . . . . . . . . . . . .   8
+     7.2.  Untrusted Servers . . . . . . . . . . . . . . . . . . . .   9
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  11
+     9.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . .  12
+   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .  12
    Design Justifications . . . . . . . . . . . . . . . . . . . . . .  12
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  13
 
 
 
-Schinazi                Expires December 14, 2019               [Page 2]
+Schinazi                 Expires January 9, 2020                [Page 2]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
+
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  14
 
 1.  Introduction
 
@@ -163,11 +165,9 @@ Internet-Draft                   MASQUE                        June 2019
 
 
 
-
-
-Schinazi                Expires December 14, 2019               [Page 3]
+Schinazi                 Expires January 9, 2020                [Page 3]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
 
 2.2.  Protection from Web Servers
@@ -213,7 +213,7 @@ Internet-Draft                   MASQUE                        June 2019
    a regular HTTPS client.  Observers only see that HTTP/3 or HTTP/2 is
    being used over an encrypted channel.  No part of the exchanges
    between client and server may stick out.  Note that traffic analysis
-   is discussed in Section 6.1.
+   is discussed in Section 7.1.
 
 
 
@@ -221,9 +221,9 @@ Internet-Draft                   MASQUE                        June 2019
 
 
 
-Schinazi                Expires December 14, 2019               [Page 4]
+Schinazi                 Expires January 9, 2020                [Page 4]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
 
 3.2.  Invisibility of the Server
@@ -237,9 +237,7 @@ Internet-Draft                   MASQUE                        June 2019
 
    When QUIC is blocked, MASQUE can run over TCP and still satisfy
    previous requirements.  Note that in this scenario performance may be
-   negatively impacted.  MASQUE implementations using HTTP/3 MUST
-   support the fallback to HTTP/2 to avoid incentivizing censors to
-   block HTTP/3 or QUIC.
+   negatively impacted.
 
 4.  Overview of the Mechanism
 
@@ -277,9 +275,11 @@ Internet-Draft                   MASQUE                        June 2019
 
 
 
-Schinazi                Expires December 14, 2019               [Page 5]
+
+
+Schinazi                 Expires January 9, 2020                [Page 5]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
 
   Masque-Authentication: PublicKey u="am9obi5kb2U=";a=1.3.101.112;
@@ -333,9 +333,9 @@ Internet-Draft                   MASQUE                        June 2019
 
 
 
-Schinazi                Expires December 14, 2019               [Page 6]
+Schinazi                 Expires January 9, 2020                [Page 6]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
 
    request an UDP association to an IP address and UDP port pair.  In
@@ -389,9 +389,9 @@ Internet-Draft                   MASQUE                        June 2019
 
 
 
-Schinazi                Expires December 14, 2019               [Page 7]
+Schinazi                 Expires January 9, 2020                [Page 7]
 
-Internet-Draft                   MASQUE                        June 2019
+Internet-Draft                   MASQUE                        July 2019
 
 
 5.7.  Service Registration
@@ -409,11 +409,26 @@ Internet-Draft                   MASQUE                        June 2019
    Server Name Indication (ESNI) [I-D.ietf-tls-esni].  That will require
    the MASQUE server sending the cleartext SNI to the home server.
 
-6.  Security Considerations
+6.  Operation over HTTP/2
+
+   MASQUE implementations using HTTP/3 MUST support the fallback to
+   HTTP/2 to avoid incentivizing censors to block HTTP/3 or QUIC.  When
+   running over HTTP/2, MASQUE uses the Extended CONNECT method to
+   negotiate the use of datagrams over an HTTP/2 stream
+   [I-D.kinnear-httpbis-http2-transport].
+
+   MASQUE implementations SHOULD discover that HTTP/3 is available (as
+   opposed to only HTTP/2) using the same mechanism as regular HTTP
+   traffic.  This current standardized mechanism for this is HTTP
+   Alternative Services [RFC7838], but future mechanisms such as
+   [I-D.schwartz-httpbis-dns-alt-svc] can be used if they become
+   widespread.
+
+7.  Security Considerations
 
    Here be dragons.  TODO: slay the dragons.
 
-6.1.  Traffic Analysis
+7.1.  Traffic Analysis
 
    While MASQUE ensures that proxied traffic appears similar to regular
    HTTP traffic, it doesn't inherently defeat traffic analysis.
@@ -427,10 +442,18 @@ Internet-Draft                   MASQUE                        June 2019
    When multiple MASQUE servers are available, a client can leverage
    QUIC connection migration to seamlessly transition its end-to-end
    QUIC connections by treating separate MASQUE servers as different
+
+
+
+Schinazi                 Expires January 9, 2020                [Page 8]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    paths.  This could afford an additional level of obfuscation in hopes
    of rendering traffic analysis less effective.
 
-6.2.  Untrusted Servers
+7.2.  Untrusted Servers
 
    As with any proxy or VPN technology, MASQUE hides some of the
    client's private information (such as who they are communicating
@@ -440,17 +463,7 @@ Internet-Draft                   MASQUE                        June 2019
    MASQUE server and advertise it as a privacy solution in hopes of
    attracting users to send it their traffic.
 
-
-
-
-
-
-Schinazi                Expires December 14, 2019               [Page 8]
-
-Internet-Draft                   MASQUE                        June 2019
-
-
-7.  IANA Considerations
+8.  IANA Considerations
 
    We will need to register:
 
@@ -476,35 +489,37 @@ Internet-Draft                   MASQUE                        June 2019
    We will also need to define the MASQUE control protocol and that will
    be likely to define new registries of its own.
 
-8.  References
+9.  References
 
-8.1.  Normative References
+9.1.  Normative References
 
    [I-D.ietf-quic-http]
               Bishop, M., "Hypertext Transfer Protocol Version 3
               (HTTP/3)", draft-ietf-quic-http-20 (work in progress),
               April 2019.
 
+
+
+
+Schinazi                 Expires January 9, 2020                [Page 9]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    [I-D.ietf-quic-transport]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
               and Secure Transport", draft-ietf-quic-transport-20 (work
               in progress), April 2019.
 
+   [I-D.kinnear-httpbis-http2-transport]
+              Kinnear, E. and T. Pauly, "Using HTTP/2 as a Transport for
+              Arbitrary Bytestreams", draft-kinnear-httpbis-
+              http2-transport-01 (work in progress), March 2019.
+
    [I-D.pauly-quic-datagram]
               Pauly, T., Kinnear, E., and D. Schinazi, "An Unreliable
-              Datagram Extension to QUIC", draft-pauly-quic-datagram-02
-              (work in progress), February 2019.
-
-
-
-
-
-
-
-Schinazi                Expires December 14, 2019               [Page 9]
-
-Internet-Draft                   MASQUE                        June 2019
-
+              Datagram Extension to QUIC", draft-pauly-quic-datagram-03
+              (work in progress), July 2019.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -520,6 +535,10 @@ Internet-Draft                   MASQUE                        June 2019
               DOI 10.17487/RFC7540, May 2015,
               <https://www.rfc-editor.org/info/rfc7540>.
 
+   [RFC7838]  Nottingham, M., McManus, P., and J. Reschke, "HTTP
+              Alternative Services", RFC 7838, DOI 10.17487/RFC7838,
+              April 2016, <https://www.rfc-editor.org/info/rfc7838>.
+
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
@@ -532,7 +551,18 @@ Internet-Draft                   MASQUE                        June 2019
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
               <https://www.rfc-editor.org/info/rfc8484>.
 
-8.2.  Informative References
+
+
+
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 10]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
+9.2.  Informative References
 
    [I-D.ietf-httpbis-http2-secondary-certs]
               Bishop, M., Sullivan, N., and M. Thomson, "Secondary
@@ -549,18 +579,15 @@ Internet-Draft                   MASQUE                        June 2019
               draft-pardue-httpbis-http-network-tunnelling-01 (work in
               progress), October 2018.
 
+   [I-D.schwartz-httpbis-dns-alt-svc]
+              Schwartz, B. and M. Bishop, "Finding HTTP Alternative
+              Services via the Domain Name Service", draft-schwartz-
+              httpbis-dns-alt-svc-02 (work in progress), April 2018.
+
    [I-D.schwartz-httpbis-helium]
               Schwartz, B., "Hybrid Encapsulation Layer for IP and UDP
               Messages (HELIUM)", draft-schwartz-httpbis-helium-00 (work
               in progress), June 2018.
-
-
-
-
-Schinazi                Expires December 14, 2019              [Page 10]
-
-Internet-Draft                   MASQUE                        June 2019
-
 
    [I-D.sullivan-tls-post-handshake-auth]
               Sullivan, N., Thomson, M., and M. Bishop, "Post-Handshake
@@ -581,7 +608,17 @@ Internet-Draft                   MASQUE                        June 2019
               DOI 10.17487/RFC8471, October 2018,
               <https://www.rfc-editor.org/info/rfc8471>.
 
-8.3.  URIs
+
+
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 11]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
+9.3.  URIs
 
    [1] mailto:masque@ietf.org
 
@@ -609,15 +646,6 @@ Acknowledgments
    run the MASQUE protocol over HTTP/2 streams was inspired by
    [RFC8441].  Using the OID for the signature algorithm was inspired by
    Signature Authentication in IKEv2 [RFC7427].  Brendan Moran is to
-
-
-
-
-Schinazi                Expires December 14, 2019              [Page 11]
-
-Internet-Draft                   MASQUE                        June 2019
-
-
    thank for the idea of leveraging connection migration across MASQUE
    servers.
 
@@ -637,6 +665,15 @@ Design Justifications
    server-initiated messages.  If we were to use HTTP semantics, we
    would only be able to support the client-initiated request-response
    model.  We could have used WebSocket for this purpose but that would
+
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 12]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    have added wire overhead and dependencies without providing useful
    features.
 
@@ -665,15 +702,6 @@ Design Justifications
    the TLS ClientHello, and that would stick out from a regular HTTPS
    connection.
 
-
-
-
-
-Schinazi                Expires December 14, 2019              [Page 12]
-
-Internet-Draft                   MASQUE                        June 2019
-
-
    Client authentication could have benefited from Secondary Certificate
    Authentication in HTTP/2 [I-D.ietf-httpbis-http2-secondary-certs],
    however that has two downsides: it requires the server advertising
@@ -694,6 +722,14 @@ Internet-Draft                   MASQUE                        June 2019
    HMACs (and signatures) need some data to sign, and to avoid replay
    attacks that should be a fresh nonce provided by the remote peer.
    Having the server provide an explicit nonce would leak the existence
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 13]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    of the server so we use TLS keying material exporters as they provide
    us with a nonce that contains entropy from the server without
    requiring explicit communication.
@@ -725,4 +761,24 @@ Author's Address
 
 
 
-Schinazi                Expires December 14, 2019              [Page 13]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schinazi                 Expires January 9, 2020               [Page 14]
