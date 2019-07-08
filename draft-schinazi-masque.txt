@@ -87,7 +87,7 @@ Table of Contents
      3.2.  Invisibility of the Server  . . . . . . . . . . . . . . .   5
      3.3.  Fallback to HTTP/2 over TLS over TCP  . . . . . . . . . .   5
    4.  Overview of the Mechanism . . . . . . . . . . . . . . . . . .   5
-   5.  Mechanisms the Server Can Advertise to Authenticated Clients    5
+   5.  Mechanisms the Server Can Advertise to Authenticated Clients    6
      5.1.  HTTP Proxy  . . . . . . . . . . . . . . . . . . . . . . .   6
      5.2.  DNS over HTTPS  . . . . . . . . . . . . . . . . . . . . .   6
      5.3.  UDP Proxying  . . . . . . . . . . . . . . . . . . . . . .   6
@@ -114,7 +114,7 @@ Schinazi                 Expires January 9, 2020                [Page 2]
 Internet-Draft                   MASQUE                        July 2019
 
 
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  12
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  13
 
 1.  Introduction
 
@@ -249,12 +249,14 @@ Internet-Draft                   MASQUE                        July 2019
    establishing a regular HTTPS connection to the server (HTTP/3 over
    QUIC or HTTP/2 over TLS 1.3 [RFC8446] over TCP), and validates the
    server's TLS certificate as it normally would for HTTPS.  If
-   validation fails, the connection is aborted.  The client then uses
-   HTTP Transport Authentication (draft-schinazi-httpbis-transport-auth)
-   to prove its possession of its associated key.  The client sends the
-   Transport-Authentication header alongside an HTTP CONNECT request for
-   "/.well-known/masque/initial" with the :protocol pseudo-header field
-   set to "masque".
+   validation fails, the connection is aborted.  At this point the
+   client can send regular unauthenticated HTTP requests to the server.
+   When it wishes to start MASQUE, the client uses HTTP Transport
+   Authentication (draft-schinazi-httpbis-transport-auth) to prove its
+   possession of its associated key.  The client sends the Transport-
+   Authentication header alongside an HTTP CONNECT request for "/.well-
+   known/masque/initial" with the :protocol pseudo-header field set to
+   "masque".
 
    When the server receives this CONNECT request, it authenticates the
    client and if that fails responds with code "405 Method Not Allowed",
@@ -269,11 +271,9 @@ Internet-Draft                   MASQUE                        July 2019
    endpoints to negotiate the use of QUIC extensions, such as support
    for the DATAGRAM extension [I-D.pauly-quic-datagram].
 
-5.  Mechanisms the Server Can Advertise to Authenticated Clients
-
-   Once a server has authenticated the client's MASQUE CONNECT request,
-   it advertises services that the client may use.
-
+   Clients MUST NOT attempt to "resume" MASQUE state similarly to how
+   TLS sessions can be resumed.  Every new QUIC or TLS connection
+   requires fully authenticating the client and server.  QUIC 0-RTT and
 
 
 
@@ -282,12 +282,21 @@ Schinazi                 Expires January 9, 2020                [Page 5]
 Internet-Draft                   MASQUE                        July 2019
 
 
+   TLS early data MUST NOT be used with MASQUE as they are not forward
+   secure.
+
+5.  Mechanisms the Server Can Advertise to Authenticated Clients
+
+   Once a server has authenticated the client's MASQUE CONNECT request,
+   it advertises services that the client may use.
+
 5.1.  HTTP Proxy
 
    The client can make proxied HTTP requests through the server to other
    servers.  In practice this will mean using the CONNECT method to
    establish a stream over which to run TLS to a different remote
-   destination.
+   destination.  The proxy applies back-pressure to streams in both
+   directions.
 
 5.2.  DNS over HTTPS
 
@@ -322,15 +331,6 @@ Internet-Draft                   MASQUE                        July 2019
    minimum length or vended by the MASQUE server) and then the server
    can forward those packets to further web servers.
 
-   This mechanism can elide the connection IDs on the link between the
-   client and MASQUE server by negotiating a mapping between
-   DATAGRAM_IDs and the tuple (client connection ID, server connection
-   ID, server IP address, server port).
-
-   Compared to UDP proxying, this mode has the advantage of only
-   requiring one UDP port to be open on the MASQUE server, and can lower
-
-
 
 
 Schinazi                 Expires January 9, 2020                [Page 6]
@@ -338,6 +338,13 @@ Schinazi                 Expires January 9, 2020                [Page 6]
 Internet-Draft                   MASQUE                        July 2019
 
 
+   This mechanism can elide the connection IDs on the link between the
+   client and MASQUE server by negotiating a mapping between
+   DATAGRAM_IDs and the tuple (client connection ID, server connection
+   ID, server IP address, server port).
+
+   Compared to UDP proxying, this mode has the advantage of only
+   requiring one UDP port to be open on the MASQUE server, and can lower
    the overhead on the link between client and MASQUE server by
    compressing connection IDs.
 
@@ -379,13 +386,6 @@ Internet-Draft                   MASQUE                        July 2019
    MASQUE implementations using HTTP/3 MUST support the fallback to
    HTTP/2 to avoid incentivizing censors to block HTTP/3 or QUIC.  When
    running over HTTP/2, MASQUE uses the Extended CONNECT method to
-   negotiate the use of datagrams over an HTTP/2 stream
-   [I-D.kinnear-httpbis-http2-transport].
-
-   MASQUE implementations SHOULD discover that HTTP/3 is available (as
-   opposed to only HTTP/2) using the same mechanism as regular HTTP
-   traffic.  This current standardized mechanism for this is HTTP
-   Alternative Services [RFC7838], but future mechanisms such as
 
 
 
@@ -394,6 +394,13 @@ Schinazi                 Expires January 9, 2020                [Page 7]
 Internet-Draft                   MASQUE                        July 2019
 
 
+   negotiate the use of datagrams over an HTTP/2 stream
+   [I-D.kinnear-httpbis-http2-transport].
+
+   MASQUE implementations SHOULD discover that HTTP/3 is available (as
+   opposed to only HTTP/2) using the same mechanism as regular HTTP
+   traffic.  This current standardized mechanism for this is HTTP
+   Alternative Services [RFC7838], but future mechanisms such as
    [I-D.schwartz-httpbis-dns-alt-svc] can be used if they become
    widespread.
 
@@ -434,6 +441,15 @@ Internet-Draft                   MASQUE                        July 2019
 
    o  the "/.well-known/masque/" URI (expert review)
 
+
+
+
+
+Schinazi                 Expires January 9, 2020                [Page 8]
+
+Internet-Draft                   MASQUE                        July 2019
+
+
    https://www.iana.org/assignments/well-known-uris/well-known-
    uris.xhtml [5]
 
@@ -442,13 +458,6 @@ Internet-Draft                   MASQUE                        July 2019
 
    We will also need to define the MASQUE control protocol and that will
    be likely to define new registries of its own.
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 8]
-
-Internet-Draft                   MASQUE                        July 2019
-
 
 9.  References
 
@@ -488,15 +497,6 @@ Internet-Draft                   MASQUE                        July 2019
               Alternative Services", RFC 7838, DOI 10.17487/RFC7838,
               April 2016, <https://www.rfc-editor.org/info/rfc7838>.
 
-   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
-              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
-              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
-
-   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
-              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
-              <https://www.rfc-editor.org/info/rfc8446>.
-
-
 
 
 
@@ -505,6 +505,14 @@ Schinazi                 Expires January 9, 2020                [Page 9]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
+              <https://www.rfc-editor.org/info/rfc8446>.
 
    [RFC8484]  Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
@@ -546,14 +554,6 @@ Internet-Draft                   MASQUE                        July 2019
               RFC 8441, DOI 10.17487/RFC8441, September 2018,
               <https://www.rfc-editor.org/info/rfc8441>.
 
-   [RFC8471]  Popov, A., Ed., Nystroem, M., Balfanz, D., and J. Hodges,
-              "The Token Binding Protocol Version 1.0", RFC 8471,
-              DOI 10.17487/RFC8471, October 2018,
-              <https://www.rfc-editor.org/info/rfc8471>.
-
-
-
-
 
 
 
@@ -561,6 +561,11 @@ Schinazi                 Expires January 9, 2020               [Page 10]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   [RFC8471]  Popov, A., Ed., Nystroem, M., Balfanz, D., and J. Hodges,
+              "The Token Binding Protocol Version 1.0", RFC 8471,
+              DOI 10.17487/RFC8471, October 2018,
+              <https://www.rfc-editor.org/info/rfc8471>.
 
 9.3.  URIs
 
@@ -604,12 +609,7 @@ Design Justifications
    have added wire overhead and dependencies without providing useful
    features.
 
-   There are many other ways to authenticate HTTP, however the
-   authentication used here needs to work in a single client-initiated
-   message to meet the requirement of not exposing the server.
 
-   The current proposal would also work with TLS 1.2, but in that case
-   TLS false start and renegotiation must be disabled, and the extended
 
 
 
@@ -618,6 +618,12 @@ Schinazi                 Expires January 9, 2020               [Page 11]
 Internet-Draft                   MASQUE                        July 2019
 
 
+   There are many other ways to authenticate HTTP, however the
+   authentication used here needs to work in a single client-initiated
+   message to meet the requirement of not exposing the server.
+
+   The current proposal would also work with TLS 1.2, but in that case
+   TLS false start and renegotiation must be disabled, and the extended
    master secret and renegotiation indication TLS extensions must be
    enabled.
 
@@ -661,18 +667,14 @@ Internet-Draft                   MASQUE                        July 2019
    us with a nonce that contains entropy from the server without
    requiring explicit communication.
 
-Author's Address
-
-
-
-
-
 
 
 Schinazi                 Expires January 9, 2020               [Page 12]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+Author's Address
 
    David Schinazi
    Google LLC
@@ -681,8 +683,6 @@ Internet-Draft                   MASQUE                        July 2019
    United States of America
 
    Email: dschinazi.ietf@gmail.com
-
-
 
 
 
