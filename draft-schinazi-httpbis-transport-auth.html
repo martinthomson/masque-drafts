@@ -490,7 +490,7 @@ cyA1MTIgYml0cyBmb3IgU0hBLTUxMiEhISEhIQ=="
 <h1 id="rfc.section.6">
 <a href="#rfc.section.6">6.</a> <a href="#security" id="security">Security Considerations</a>
 </h1>
-<p id="rfc.section.6.p.1">Transport Authentication allows a user-agent to authenticate to an origin server while guaranteeing freshness and without the need for the server to transmit a nonce to the user agent. This allows the server to accept authenticated clients without revealing that it supports or expects authentication for some resources.</p>
+<p id="rfc.section.6.p.1">Transport Authentication allows a user-agent to authenticate to an origin server while guaranteeing freshness and without the need for the server to transmit a nonce to the user agent. This allows the server to accept authenticated clients without revealing that it supports or expects authentication for some resources. It also allows authentication without the user agent leaking the presence of authentication to observers due to clear-text TLS Client Hello extensions.</p>
 <h1 id="rfc.section.7">
 <a href="#rfc.section.7">7.</a> <a href="#iana" id="iana">IANA Considerations</a>
 </h1>
