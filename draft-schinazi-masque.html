@@ -319,7 +319,7 @@ ul.toc li {
 
   <meta name="dct.creator" content="Schinazi, D." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-schinazi-masque" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-07-08" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-07-09" />
   <meta name="dct.abstract" content="This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list masque@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/masque-drafts." />
   <meta name="description" content="This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list masque@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/masque-drafts." />
 
@@ -340,10 +340,10 @@ ul.toc li {
 </tr>
 <tr>
 <td class="left">Intended status: Experimental</td>
-<td class="right">July 08, 2019</td>
+<td class="right">July 09, 2019</td>
 </tr>
 <tr>
-<td class="left">Expires: January 9, 2020</td>
+<td class="left">Expires: January 10, 2020</td>
 <td class="right"></td>
 </tr>
 
@@ -361,7 +361,7 @@ ul.toc li {
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on January 9, 2020.</p>
+<p>This Internet-Draft will expire on January 10, 2020.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -487,7 +487,7 @@ ul.toc li {
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#overview" id="overview">Overview of the Mechanism</a>
 </h1>
-<p id="rfc.section.4.p.1">The server runs an HTTPS server on port 443, and has a valid TLS certificate for its domain. The client has a public/private key pair, and the server maintains a list of authorized MASQUE clients, and their public key.  (Alternatively, clients can also be authenticated using a shared secret.) The client starts by establishing a regular HTTPS connection to the server (HTTP/3 over QUIC or HTTP/2 over TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> over TCP), and validates the server&#8217;s TLS certificate as it normally would for HTTPS. If validation fails, the connection is aborted. At this point the client can send regular unauthenticated HTTP requests to the server. When it wishes to start MASQUE, the client uses HTTP Transport Authentication (draft-schinazi-httpbis-transport-auth) to prove its possession of its associated key. The client sends the Transport-Authentication header alongside an HTTP CONNECT request for &#8220;/.well-known/masque/initial&#8221; with the :protocol pseudo-header field set to &#8220;masque&#8221;.</p>
+<p id="rfc.section.4.p.1">The server runs an HTTPS server on port 443, and has a valid TLS certificate for its domain. The client has a public/private key pair, and the server maintains a list of authorized MASQUE clients, and their public key.  (Alternatively, clients can also be authenticated using a shared secret.) The client starts by establishing a regular HTTPS connection to the server (HTTP/3 over QUIC or HTTP/2 over TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> over TCP), and validates the server&#8217;s TLS certificate as it normally would for HTTPS. If validation fails, the connection is aborted. At this point the client can send regular unauthenticated HTTP requests to the server. When it wishes to start MASQUE, the client uses HTTP Transport Authentication <a href="#I-D.schinazi-httpbis-transport-auth" class="xref">[I-D.schinazi-httpbis-transport-auth]</a> to prove its possession of its associated key. The client sends the Transport-Authentication header alongside an HTTP CONNECT request for &#8220;/.well-known/masque/initial&#8221; with the :protocol pseudo-header field set to &#8220;masque&#8221;.</p>
 <p id="rfc.section.4.p.2">When the server receives this CONNECT request, it authenticates the client and if that fails responds with code &#8220;405 Method Not Allowed&#8221;, making sure its response is the same as what it would return for any unexpected CONNECT request. If authentication succeeds, the server responds with code &#8220;101 Switching Protocols&#8221;, and from then on this HTTP stream is now dedicated to the MASQUE protocol. That protocol provides a reliable bidirectional message exchange mechanism, which is used by the client and server to negotiate what protocol options are supported and enabled by policy, and client VPN configuration such as IP addresses. When using QUIC, this protocol also allows endpoints to negotiate the use of QUIC extensions, such as support for the DATAGRAM extension <a href="#I-D.pauly-quic-datagram" class="xref">[I-D.pauly-quic-datagram]</a>.</p>
 <p id="rfc.section.4.p.3">Clients MUST NOT attempt to &#8220;resume&#8221; MASQUE state similarly to how TLS sessions can be resumed. Every new QUIC or TLS connection requires fully authenticating the client and server. QUIC 0-RTT and TLS early data MUST NOT be used with MASQUE as they are not forward secure.</p>
 <h1 id="rfc.section.5">
@@ -568,7 +568,7 @@ ul.toc li {
 <tr>
 <td class="reference"><b id="I-D.ietf-quic-transport">[I-D.ietf-quic-transport]</b></td>
 <td class="top">
-<a>Iyengar, J.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-transport-20">QUIC: A UDP-Based Multiplexed and Secure Transport</a>", Internet-Draft draft-ietf-quic-transport-20, April 2019.</td>
+<a>Iyengar, J.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-transport-22">QUIC: A UDP-Based Multiplexed and Secure Transport</a>", Internet-Draft draft-ietf-quic-transport-22, July 2019.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.kinnear-httpbis-http2-transport">[I-D.kinnear-httpbis-http2-transport]</b></td>
@@ -579,6 +579,11 @@ ul.toc li {
 <td class="reference"><b id="I-D.pauly-quic-datagram">[I-D.pauly-quic-datagram]</b></td>
 <td class="top">
 <a>Pauly, T.</a>, <a>Kinnear, E.</a> and <a>D. Schinazi</a>, "<a href="https://tools.ietf.org/html/draft-pauly-quic-datagram-03">An Unreliable Datagram Extension to QUIC</a>", Internet-Draft draft-pauly-quic-datagram-03, July 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.schinazi-httpbis-transport-auth">[I-D.schinazi-httpbis-transport-auth]</b></td>
+<td class="top">
+<a>Schinazi, D.</a>, "<a href="https://tools.ietf.org/html/draft-schinazi-httpbis-transport-auth-00">HTTP Transport Authentication</a>", Internet-Draft draft-schinazi-httpbis-transport-auth-00, July 2019.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
@@ -622,7 +627,7 @@ ul.toc li {
 <tr>
 <td class="reference"><b id="I-D.ietf-tls-esni">[I-D.ietf-tls-esni]</b></td>
 <td class="top">
-<a>Rescorla, E.</a>, <a>Oku, K.</a>, <a>Sullivan, N.</a> and <a>C. Wood</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-esni-03">Encrypted Server Name Indication for TLS 1.3</a>", Internet-Draft draft-ietf-tls-esni-03, March 2019.</td>
+<a>Rescorla, E.</a>, <a>Oku, K.</a>, <a>Sullivan, N.</a> and <a>C. Wood</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-esni-04">Encrypted Server Name Indication for TLS 1.3</a>", Internet-Draft draft-ietf-tls-esni-04, July 2019.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.pardue-httpbis-http-network-tunnelling">[I-D.pardue-httpbis-http-network-tunnelling]</b></td>

@@ -4,8 +4,8 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                              July 08, 2019
-Expires: January 9, 2020
+Intended status: Experimental                              July 09, 2019
+Expires: January 10, 2020
 
 
                           The MASQUE Protocol
@@ -47,13 +47,13 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 9, 2020.
+   This Internet-Draft will expire on January 10, 2020.
 
 
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 1]
+Schinazi                Expires January 10, 2020                [Page 1]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 2]
+Schinazi                Expires January 10, 2020                [Page 2]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -165,7 +165,7 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 3]
+Schinazi                Expires January 10, 2020                [Page 3]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -221,7 +221,7 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 4]
+Schinazi                Expires January 10, 2020                [Page 4]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -252,7 +252,7 @@ Internet-Draft                   MASQUE                        July 2019
    validation fails, the connection is aborted.  At this point the
    client can send regular unauthenticated HTTP requests to the server.
    When it wishes to start MASQUE, the client uses HTTP Transport
-   Authentication (draft-schinazi-httpbis-transport-auth) to prove its
+   Authentication [I-D.schinazi-httpbis-transport-auth] to prove its
    possession of its associated key.  The client sends the Transport-
    Authentication header alongside an HTTP CONNECT request for "/.well-
    known/masque/initial" with the :protocol pseudo-header field set to
@@ -277,7 +277,7 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 5]
+Schinazi                Expires January 10, 2020                [Page 5]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -333,7 +333,7 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 6]
+Schinazi                Expires January 10, 2020                [Page 6]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -389,7 +389,7 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 7]
+Schinazi                Expires January 10, 2020                [Page 7]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -445,7 +445,7 @@ Internet-Draft                   MASQUE                        July 2019
 
 
 
-Schinazi                 Expires January 9, 2020                [Page 8]
+Schinazi                Expires January 10, 2020                [Page 8]
 
 Internet-Draft                   MASQUE                        July 2019
 
@@ -470,8 +470,8 @@ Internet-Draft                   MASQUE                        July 2019
 
    [I-D.ietf-quic-transport]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
-              and Secure Transport", draft-ietf-quic-transport-20 (work
-              in progress), April 2019.
+              and Secure Transport", draft-ietf-quic-transport-22 (work
+              in progress), July 2019.
 
    [I-D.kinnear-httpbis-http2-transport]
               Kinnear, E. and T. Pauly, "Using HTTP/2 as a Transport for
@@ -483,6 +483,11 @@ Internet-Draft                   MASQUE                        July 2019
               Datagram Extension to QUIC", draft-pauly-quic-datagram-03
               (work in progress), July 2019.
 
+   [I-D.schinazi-httpbis-transport-auth]
+              Schinazi, D., "HTTP Transport Authentication", draft-
+              schinazi-httpbis-transport-auth-00 (work in progress),
+              July 2019.
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -493,18 +498,17 @@ Internet-Draft                   MASQUE                        July 2019
               DOI 10.17487/RFC7540, May 2015,
               <https://www.rfc-editor.org/info/rfc7540>.
 
-   [RFC7838]  Nottingham, M., McManus, P., and J. Reschke, "HTTP
-              Alternative Services", RFC 7838, DOI 10.17487/RFC7838,
-              April 2016, <https://www.rfc-editor.org/info/rfc7838>.
 
 
 
-
-
-Schinazi                 Expires January 9, 2020                [Page 9]
+Schinazi                Expires January 10, 2020                [Page 9]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   [RFC7838]  Nottingham, M., McManus, P., and J. Reschke, "HTTP
+              Alternative Services", RFC 7838, DOI 10.17487/RFC7838,
+              April 2016, <https://www.rfc-editor.org/info/rfc7838>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -528,7 +532,7 @@ Internet-Draft                   MASQUE                        July 2019
    [I-D.ietf-tls-esni]
               Rescorla, E., Oku, K., Sullivan, N., and C. Wood,
               "Encrypted Server Name Indication for TLS 1.3", draft-
-              ietf-tls-esni-03 (work in progress), March 2019.
+              ietf-tls-esni-04 (work in progress), July 2019.
 
    [I-D.pardue-httpbis-http-network-tunnelling]
               Pardue, L., "HTTP-initiated Network Tunnelling (HiNT)",
@@ -550,17 +554,17 @@ Internet-Draft                   MASQUE                        July 2019
               Authentication in TLS", draft-sullivan-tls-post-handshake-
               auth-00 (work in progress), August 2016.
 
-   [RFC8441]  McManus, P., "Bootstrapping WebSockets with HTTP/2",
-              RFC 8441, DOI 10.17487/RFC8441, September 2018,
-              <https://www.rfc-editor.org/info/rfc8441>.
 
 
 
-
-Schinazi                 Expires January 9, 2020               [Page 10]
+Schinazi                Expires January 10, 2020               [Page 10]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   [RFC8441]  McManus, P., "Bootstrapping WebSockets with HTTP/2",
+              RFC 8441, DOI 10.17487/RFC8441, September 2018,
+              <https://www.rfc-editor.org/info/rfc8441>.
 
    [RFC8471]  Popov, A., Ed., Nystroem, M., Balfanz, D., and J. Hodges,
               "The Token Binding Protocol Version 1.0", RFC 8471,
@@ -606,17 +610,16 @@ Design Justifications
    server-initiated messages.  If we were to use HTTP semantics, we
    would only be able to support the client-initiated request-response
    model.  We could have used WebSocket for this purpose but that would
-   have added wire overhead and dependencies without providing useful
-   features.
 
 
 
-
-
-Schinazi                 Expires January 9, 2020               [Page 11]
+Schinazi                Expires January 10, 2020               [Page 11]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   have added wire overhead and dependencies without providing useful
+   features.
 
    There are many other ways to authenticate HTTP, however the
    authentication used here needs to work in a single client-initiated
@@ -663,16 +666,17 @@ Internet-Draft                   MASQUE                        July 2019
    HMACs (and signatures) need some data to sign, and to avoid replay
    attacks that should be a fresh nonce provided by the remote peer.
    Having the server provide an explicit nonce would leak the existence
-   of the server so we use TLS keying material exporters as they provide
-   us with a nonce that contains entropy from the server without
-   requiring explicit communication.
 
 
 
-Schinazi                 Expires January 9, 2020               [Page 12]
+Schinazi                Expires January 10, 2020               [Page 12]
 
 Internet-Draft                   MASQUE                        July 2019
 
+
+   of the server so we use TLS keying material exporters as they provide
+   us with a nonce that contains entropy from the server without
+   requiring explicit communication.
 
 Author's Address
 
@@ -721,8 +725,4 @@ Author's Address
 
 
 
-
-
-
-
-Schinazi                 Expires January 9, 2020               [Page 13]
+Schinazi                Expires January 10, 2020               [Page 13]
