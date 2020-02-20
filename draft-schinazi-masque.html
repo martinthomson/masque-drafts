@@ -1,702 +1,2029 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<title>The MASQUE Protocol</title>
+<meta content="David Schinazi" name="author">
+<meta content="
+       This document describes MASQUE (Multiplexed Application Substrate over QUIC
+Encryption). MASQUE is a framework that allows concurrently running multiple
+networking applications inside an HTTP/3 connection. For example, MASQUE can
+allow a QUIC client to negotiate proxying capability with an HTTP/3 server,
+and subsequently make use of this functionality while concurrently processing
+HTTP/3 requests and responses. 
+       This document is a straw-man proposal. It does not contain enough details to
+implement the protocol, and is currently intended to spark discussions on
+the approach it is taking. Discussion of this work is encouraged to happen on
+the MASQUE IETF mailing list  masque@ietf.org  or on the GitHub repository
+which contains the draft:  https://github.com/DavidSchinazi/masque-drafts . 
+    " name="description">
+<meta content="xml2rfc 2.19.0" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<link href="draft-schinazi-masque.xml" type="application/rfc+xml" rel="alternate">
+<link href="#copyright" rel="license">
+<style type="text/css">@import url('https://martinthomson.github.io/i-d-template/fonts.css');
 
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
-  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
-
-  <title>The MASQUE Protocol</title>
-
-  
-<style type="text/css">/*<![CDATA[*/
-
+html {
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --small-font-size: 14.5px;
+}
 body {
-  font: 16px "Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
-  color: #333;
-  font-size-adjust: 0.5;
-  line-height: 24px;
-  margin: 75px auto;
   max-width: 624px;
+  margin: 75px auto;
   padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
 }
 
-.title, .filename, h1, h2, h3, h4, h5 {
-  font: 16px "Roboto Condensed","Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
-  font-size-adjust: 0.5;
-  font-weight: bold;
-  color: #333;
-  line-height: 100%;
-  margin: 1.2em 0 0.3em;
-}
-.title, #rfc\.title h1 { font-size: 32px; }
-h1, section h1, h2, section h2, section h3, nav h2 { font-size: 20px; }
-h3, section h4, h4, section h5 { font-size: 16px; }
-h1 a[href], h2 a[href], h3 a[href], h4 a[href] {
-  color: #333;
-}
-
-table {
-  margin-left: 0em;
-  border-collapse: collapse;
-}
-th {
-  text-align: left;
-  border-bottom: 2px solid #ddd;
-}
-td {
-  border-top: 1px solid #ddd;
-  vertical-align: top;
-}
-tr:nth-child(2n+1) > td,
-tr:nth-child(2n+1) > th {
-  background-color: #f9f9f9;
-}
-td.reference {
-  max-width: 200px;
-  border-top: none;
-  padding-right: 1em;
-}
-.right {
-  text-align: right;
-}
-
-
-table.header, table#rfc\.headerblock {
-  width: 100%;
-}
-table.header td, table#rfc\.headerblock td {
-  border: none;
-  background-color: transparent;
-  color: black;
-  padding: 0;
-}
-.filename {
-  display: block;
-  color: rgb(119, 119, 119);
-  font-size: 20px;
-  font-weight: normal;
-  line-height: 100%;
-  margin: 10px 0 32px;
-}
-#rfc\.abstract+p, #rfc\.abstract p {
-  font-size: 20px;
-  line-height: 28px;
-}
-
-samp, tt, code, pre, span.tt {
-  font: 13.5px Consolas, monospace;
-  font-size-adjust: none;
-}
-pre {
-  background-color: #eee;
-  border: 1px solid #ddd;
-  overflow-x: auto;
-  padding: 5px;
-  margin: 5px;
-}
-.figure, caption {
-  font-style: italic;
-  margin: 0 1.5em;
-  text-align: left;
-}
-
-address {
-  margin: 16px 2px;
-  line-height: 20px;
-}
-.vcard {
-  font-style: normal;
-}
-.vcardline {
-  display: block;
-}
-.vcardline .fn, address b {
-  font-weight: normal;
-}
-.vcardline .hidden {
+.ears {
   display: none;
 }
 
-dl {
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+#title {
+  padding: 1em 0 0.2em;
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 26px;
+}
+h4, h5, h6 {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p, #abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 18px;
+  line-height: 24px;
+}
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
   margin-left: 1em;
 }
-dl.dl-horizontal: {
-  margin-left: 0;
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
 }
 dl > dt {
   float: left;
   margin-right: 1em;
 }
-dl.nohang > dt {
-  float: none;
-}
 dl > dd {
-  margin-bottom: .5em;
+  margin-bottom: .8em;
+  min-height: 1.3em;
 }
-dl.compact > dd {
+dl.compact > dd, .dlCompact > dd {
   margin-bottom: 0em;
 }
 dl > dd > dl {
   margin-top: 0.5em;
   margin-bottom: 0em;
 }
-ul.empty {
-  list-style-type: none;
-}
-ul.empty li {
-  margin-top: .5em;
-}
 
-hr {
-  border: 0;
-  border-top: 1px solid #eee;
-}
-hr.noprint {
-  display: none;
-}
-
-a {
+/* links */
+a, a[href].selfRef:hover {
   text-decoration: none;
 }
+a[href].selfRef {
+  color: var(--text-color);
+}
 a[href] {
-  color: #2a6496;
+  color: var(--link-color);
 }
 a[href]:hover {
-  background-color: #eee;
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
 }
 
-p, ol, ul, li {
-  padding: 0;
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px 'Oxygen Mono', monospace;
 }
-p {
+pre {
+  border: 1px solid var(--line-color);
+  line-height: 17px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
   margin: 0.5em 0;
 }
-ol, ul {
-  margin: 0.2em 0 0.2em 2em;
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
 }
-li {
-  margin: 0.2em 0;
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
 }
-address {
-  font-style: normal;
+@media screen {
+  pre {
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  pre + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
 }
 
-ul.toc ul {
-  margin: 0 0 0 2em;
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
 }
-ul.toc li {
-  list-style: none;
+blockquote {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #eee;
+}
+tr:nth-child(2n) > td {
+  background-color: var(--background-color);
+}
+tr:nth-child(2n+1) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n+1) > td {
+  background-color: var(--background-color);
+}
+table caption {
+  font-style: italic;
+  margin: 0.3em 0;
+  padding: 0;
+  text-align: left;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
   margin: 0;
 }
 
-@media screen and (min-width: 924px) {
-  body {
-    padding-right: 350px;
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  visibility: hidden;
+  user-select: none;
+}
+a.pilcrow[href] { color: #ddd; }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media screen {
+  :hover > a.pilcrow {
+    visibility: visible;
   }
-  body>ul.toc, body>#rfc\.toc {
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .index ul ul {
+    column-count: 1;
+    column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 600px) {
+  #authors-addresses {
+    display: relative;
+    padding: 32px 0 0;
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #name-authors-addresses {
+    position: absolute;
+    top: 0px;
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+  }
+}
+
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #b76427;
+  background-color: rgba(249, 232, 105, 0.3);
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: rgba(249, 232, 105, 0.3);
+  border-radius: 3px;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 953px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 954px) {
+  body {
+    padding-right: 380px;
+  }
+  #toc {
     position: fixed;
     bottom: 0;
     right: 0;
-    right: calc(50vw - 500px);
-    width: 300px;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
     z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
     overflow: auto;
     overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
-  body>#rfc\.toc {
-    top: 55px;
+  #toc nav > ul  {
+    margin-bottom: 2em;
   }
-  body>ul.toc {
-    top: 100px;
-  }
-
-  ul.toc {
+  #toc ul {
     margin: 0 0 0 4px;
-    font-size: 12px;
-    line-height: 20px;
+    font-size: var(--small-font-size);
   }
-  ul.toc ul {
-    margin-left: 1.2em;
+  #toc ul p, #toc ul li {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
   }
 }
 
-.github-fork-ribbon-wrapper {
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</style>
+<link href="rfc-local.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">MASQUE</td>
+<td class="right">January 2020</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Schinazi</td>
+<td class="center">Expires 11 July 2020</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div class="document-information">
+<dl id="identifiers">
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-schinazi-masque</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2020-01-08" class="published">8 January 2020</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Experimental</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2020-07-11">11 July 2020</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">D. Schinazi</div>
+<div class="org">Google LLC</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">The MASQUE Protocol</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document describes MASQUE (Multiplexed Application Substrate over QUIC
+Encryption). MASQUE is a framework that allows concurrently running multiple
+networking applications inside an HTTP/3 connection. For example, MASQUE can
+allow a QUIC client to negotiate proxying capability with an HTTP/3 server,
+and subsequently make use of this functionality while concurrently processing
+HTTP/3 requests and responses.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">This document is a straw-man proposal. It does not contain enough details to
+implement the protocol, and is currently intended to spark discussions on
+the approach it is taking. Discussion of this work is encouraged to happen on
+the MASQUE IETF mailing list <a href="mailto:masque@ietf.org">masque@ietf.org</a> or on the GitHub repository
+which contains the draft: <a href="https://github.com/DavidSchinazi/masque-drafts">https://github.com/DavidSchinazi/masque-drafts</a>.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.
+        <a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.
+        <a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."
+        <a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 11 July 2020.
+        <a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2020 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        <a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Simplified BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Simplified BSD License.
+        <a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-boilerplate.3">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.1">
+            <p id="section-boilerplate.3-1.1.1"><a href="#section-1" class="xref">1</a>.  <a href="#name-introduction" class="xref">Introduction</a><a href="#section-boilerplate.3-1.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.1.2.1">
+                <p id="section-boilerplate.3-1.1.2.1.1"><a href="#section-1.1" class="xref">1.1</a>.  <a href="#name-conventions-and-definitions" class="xref">Conventions and Definitions</a><a href="#section-boilerplate.3-1.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.2">
+            <p id="section-boilerplate.3-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-masque-negotiation" class="xref">MASQUE Negotiation</a><a href="#section-boilerplate.3-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.3">
+            <p id="section-boilerplate.3-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-masque-applications" class="xref">MASQUE Applications</a><a href="#section-boilerplate.3-1.3.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.3.2.1">
+                <p id="section-boilerplate.3-1.3.2.1.1"><a href="#section-3.1" class="xref">3.1</a>.  <a href="#name-http-proxy" class="xref">HTTP Proxy</a><a href="#section-boilerplate.3-1.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.3.2.2">
+                <p id="section-boilerplate.3-1.3.2.2.1"><a href="#section-3.2" class="xref">3.2</a>.  <a href="#name-dns-over-https" class="xref">DNS over HTTPS</a><a href="#section-boilerplate.3-1.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.3.2.3">
+                <p id="section-boilerplate.3-1.3.2.3.1"><a href="#section-3.3" class="xref">3.3</a>.  <a href="#name-quic-proxying" class="xref">QUIC Proxying</a><a href="#section-boilerplate.3-1.3.2.3.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.3.2.4">
+                <p id="section-boilerplate.3-1.3.2.4.1"><a href="#section-3.4" class="xref">3.4</a>.  <a href="#name-udp-proxying" class="xref">UDP Proxying</a><a href="#section-boilerplate.3-1.3.2.4.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.3.2.5">
+                <p id="section-boilerplate.3-1.3.2.5.1"><a href="#section-3.5" class="xref">3.5</a>.  <a href="#name-ip-proxying" class="xref">IP Proxying</a><a href="#section-boilerplate.3-1.3.2.5.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.3.2.6">
+                <p id="section-boilerplate.3-1.3.2.6.1"><a href="#section-3.6" class="xref">3.6</a>.  <a href="#name-service-registration" class="xref">Service Registration</a><a href="#section-boilerplate.3-1.3.2.6.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.4">
+            <p id="section-boilerplate.3-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-security-considerations" class="xref">Security Considerations</a><a href="#section-boilerplate.3-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.5">
+            <p id="section-boilerplate.3-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-iana-considerations" class="xref">IANA Considerations</a><a href="#section-boilerplate.3-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.6">
+            <p id="section-boilerplate.3-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-references" class="xref">References</a><a href="#section-boilerplate.3-1.6.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.6.2.1">
+                <p id="section-boilerplate.3-1.6.2.1.1"><a href="#section-6.1" class="xref">6.1</a>.  <a href="#name-normative-references" class="xref">Normative References</a><a href="#section-boilerplate.3-1.6.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.6.2.2">
+                <p id="section-boilerplate.3-1.6.2.2.1"><a href="#section-6.2" class="xref">6.2</a>.  <a href="#name-informative-references" class="xref">Informative References</a><a href="#section-boilerplate.3-1.6.2.2.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.7">
+            <p id="section-boilerplate.3-1.7.1"><a href="#section-appendix.a" class="xref"></a>  <a href="#name-acknowledgments" class="xref">Acknowledgments</a><a href="#section-boilerplate.3-1.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.8">
+            <p id="section-boilerplate.3-1.8.1"><a href="#section-appendix.b" class="xref"></a>  <a href="#name-authors-address" class="xref">Author's Address</a><a href="#section-boilerplate.3-1.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">This document describes MASQUE (Multiplexed Application Substrate over QUIC
+Encryption). MASQUE is a framework that allows concurrently running multiple
+networking applications inside an HTTP/3 connection (see
+<span>[<a href="#HTTP3" class="xref">HTTP3</a>]</span>). For example, MASQUE can allow a QUIC client to
+negotiate proxying capability with an HTTP/3 server, and subsequently make use
+of this functionality while concurrently processing HTTP/3 requests and
+responses.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">MASQUE Negotiation is performed using HTTP mechanisms, but MASQUE applications
+can subsequently leverage QUIC <span>[<a href="#QUIC" class="xref">QUIC</a>]</span> features
+without using HTTP.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">This document is a straw-man proposal. It does not contain enough details to
+implement the protocol, and is currently intended to spark discussions on
+the approach it is taking. Discussion of this work is encouraged to happen on
+the MASQUE IETF mailing list <a href="mailto:masque@ietf.org">masque@ietf.org</a> or on the GitHub repository
+which contains the draft: <a href="https://github.com/DavidSchinazi/masque-drafts">https://github.com/DavidSchinazi/masque-drafts</a>.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<div id="conventions">
+<section id="section-1.1">
+        <h3 id="name-conventions-and-definitions">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+        </h3>
+<p id="section-1.1-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 <span>[<a href="#RFC2119" class="xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="xref">RFC8174</a>]</span>
+when, and only when, they appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="negotiation">
+<section id="section-2">
+      <h2 id="name-masque-negotiation">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-masque-negotiation" class="section-name selfRef">MASQUE Negotiation</a>
+      </h2>
+<p id="section-2-1">In order to negotiate the use of the MASQUE protocol, the client starts by
+sending a MASQUE request in the HTTP data of an HTTP POST request to
+"/.well-known/masque/initial". The client can use this to request specific
+MASQUE applications and advertise support for MASQUE extensions. The MASQUE
+server indicates support for MASQUE by sending an HTTP status code 200 response,
+and can use the data to inform the client of which MASQUE applications are now
+in use, and various configuration parameters.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">Both the MASQUE negotiation initial request and its response carry a list of
+type-length-value fields. The type field is a number corresponding to a MASQUE
+application, and is encoded as a QUIC variable-length integer. The length field
+represents the length in bytes of the value field, encoded as a QUIC
+variable-length integer. The contents of the value field or defined by its
+corresponding MASQUE application. When parsing, endpoints MUST ignore unknown
+MASQUE applications.<a href="#section-2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="applications">
+<section id="section-3">
+      <h2 id="name-masque-applications">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-masque-applications" class="section-name selfRef">MASQUE Applications</a>
+      </h2>
+<p id="section-3-1">As soon as the server has accepted the client's MASQUE initial request, it can
+advertise support for MASQUE Applications, which will be multiplexed over this
+HTTP/3 connection.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<div id="http-proxy">
+<section id="section-3.1">
+        <h3 id="name-http-proxy">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-http-proxy" class="section-name selfRef">HTTP Proxy</a>
+        </h3>
+<p id="section-3.1-1">The client can make proxied HTTP requests through the server to other
+servers. In practice this will mean using the CONNECT method to establish a
+stream over which to run TLS to a different remote destination. The proxy
+applies back-pressure to streams in both directions.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="doh">
+<section id="section-3.2">
+        <h3 id="name-dns-over-https">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-dns-over-https" class="section-name selfRef">DNS over HTTPS</a>
+        </h3>
+<p id="section-3.2-1">The client can send DNS queries using DNS over HTTPS <span>[<a href="#DOH" class="xref">DOH</a>]</span> to the
+MASQUE server.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="quic-proxy">
+<section id="section-3.3">
+        <h3 id="name-quic-proxying">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-quic-proxying" class="section-name selfRef">QUIC Proxying</a>
+        </h3>
+<p id="section-3.3-1">By leveraging QUIC client connection IDs, a MASQUE server can act as a QUIC
+proxy while only using one UDP port. The server informs the client of a
+scheme for client connection IDs (for example, random of a minimum length or
+vended by the MASQUE server) and then the server can forward those packets to
+further web servers.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">This mechanism can elide the connection IDs on the link between the client
+and MASQUE server by negotiating a mapping between DATAGRAM_IDs and the tuple
+(client connection ID, server connection ID, server IP address, server port).<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<p id="section-3.3-3">Compared to UDP proxying, this mode has the advantage of only requiring one UDP
+port to be open on the MASQUE server, and can lower the overhead on the link
+between client and MASQUE server by compressing connection IDs.<a href="#section-3.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="udp-proxy">
+<section id="section-3.4">
+        <h3 id="name-udp-proxying">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-udp-proxying" class="section-name selfRef">UDP Proxying</a>
+        </h3>
+<p id="section-3.4-1">In order to support WebRTC or QUIC to further servers, clients need a way to
+relay UDP onwards to a remote server. In practice for most widely deployed
+protocols other than DNS, this involves many datagrams over the same ports.
+Therefore this mechanism implements that efficiently: clients can use the
+MASQUE protocol stream to request an UDP association to an IP address and
+UDP port pair. In QUIC, the server would reply with a DATAGRAM_ID that the
+client can then use to have UDP datagrams sent to this remote server.
+Datagrams are then simply transferred between the DATAGRAMs with this ID and
+the outer server. There will also be a message on the MASQUE protocol stream
+to request shutdown of a UDP association to save resources when it is no
+longer needed.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ip-proxy">
+<section id="section-3.5">
+        <h3 id="name-ip-proxying">
+<a href="#section-3.5" class="section-number selfRef">3.5. </a><a href="#name-ip-proxying" class="section-name selfRef">IP Proxying</a>
+        </h3>
+<p id="section-3.5-1">For the rare cases where the previous mechanisms are not sufficient, proxying
+can be performed at the IP layer. This would use a different DATAGRAM_ID and
+IP datagrams would be encoded inside it without framing.<a href="#section-3.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="service-registration">
+<section id="section-3.6">
+        <h3 id="name-service-registration">
+<a href="#section-3.6" class="section-number selfRef">3.6. </a><a href="#name-service-registration" class="section-name selfRef">Service Registration</a>
+        </h3>
+<p id="section-3.6-1">MASQUE can be used to make a home server accessible on the wide area. The home
+server authenticates to the MASQUE server and registers a domain name it wishes
+to serve. The MASQUE server can then forward any traffic it receives for that
+domain name (by inspecting the TLS Server Name Indication (SNI) extension) to
+the home server. This received traffic is not authenticated and it allows
+non-modified clients to communicate with the home server without knowing it is
+not colocated with the MASQUE server.<a href="#section-3.6-1" class="pilcrow">¶</a></p>
+<p id="section-3.6-2">To help obfuscate the home server, deployments can use Encrypted Server Name
+Indication <span>[<a href="#ESNI" class="xref">ESNI</a>]</span>. That will require the MASQUE server
+sending the cleartext SNI to the home server.<a href="#section-3.6-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security">
+<section id="section-4">
+      <h2 id="name-security-considerations">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-4-1">Here be dragons. TODO: slay the dragons.<a href="#section-4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana">
+<section id="section-5">
+      <h2 id="name-iana-considerations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-5-1">This document will request IANA to register the "/.well-known/masque/" URI
+(expert review)
+<a href="https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml">https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml</a>.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">This document will request IANA to create a new MASQUE Applications registry
+which governs a 62-bit space of MASQUE application types.<a href="#section-5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<section id="section-6">
+      <h2 id="name-references">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-6.1">
+        <h3 id="name-normative-references">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="DOH">[DOH]</dt>
+        <dd>
+<span class="refAuthor">Hoffman, P.</span><span class="refAuthor"> and P. McManus</span>, <span class="refTitle">"DNS Queries over HTTPS (DoH)"</span>, <span class="seriesInfo">RFC 8484</span>, <span class="seriesInfo">DOI 10.17487/RFC8484</span>, <time datetime="2018-10">October 2018</time>
+            <span>, &lt;<a href="https://www.rfc-editor.org/info/rfc8484">https://www.rfc-editor.org/info/rfc8484</a>&gt;</span>. </dd>
+<dt id="HTTP3">[HTTP3]</dt>
+        <dd>
+<span class="refAuthor">Bishop, M.</span>, <span class="refTitle">"Hypertext Transfer Protocol Version 3 (HTTP/3)"</span>, <span class="seriesInfo">Internet-Draft draft-ietf-quic-http-24</span>, <time datetime="2019-11-04">4 November 2019</time>
+            <span>, &lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-quic-http-24.txt">http://www.ietf.org/internet-drafts/draft-ietf-quic-http-24.txt</a>&gt;</span>. </dd>
+<dt id="QUIC">[QUIC]</dt>
+        <dd>
+<span class="refAuthor">Iyengar, J.</span><span class="refAuthor"> and M. Thomson</span>, <span class="refTitle">"QUIC: A UDP-Based Multiplexed and Secure Transport"</span>, <span class="seriesInfo">Internet-Draft draft-ietf-quic-transport-24</span>, <time datetime="2019-11-03">3 November 2019</time>
+            <span>, &lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-quic-transport-24.txt">http://www.ietf.org/internet-drafts/draft-ietf-quic-transport-24.txt</a>&gt;</span>. </dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03">March 1997</time>
+            <span>, &lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
+<dt id="RFC8174">[RFC8174]</dt>
+      <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05">May 2017</time>
+            <span>, &lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
+</dl>
+</section>
+<section id="section-6.2">
+        <h3 id="name-informative-references">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="ESNI">[ESNI]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span><span class="refAuthor">, Oku, K.</span><span class="refAuthor">, Sullivan, N.</span><span class="refAuthor">, and C. Wood</span>, <span class="refTitle">"Encrypted Server Name Indication for TLS 1.3"</span>, <span class="seriesInfo">Internet-Draft draft-ietf-tls-esni-05</span>, <time datetime="2019-11-04">4 November 2019</time>
+            <span>, &lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-05.txt">http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-05.txt</a>&gt;</span>. </dd>
+</dl>
+</section>
+</section>
+<div id="acknowledgments">
+<section id="section-appendix.a">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="section-appendix.a-1">This proposal was inspired directly or indirectly by prior work from many
+people. The author would like to thank
+Nick Harper,
+Christian Huitema,
+Marcus Ihlar,
+Eric Kinnear,
+Mirja Kuehlewind,
+Brendan Moran,
+Lucas Pardue,
+Tommy Pauly,
+Zaheduzzaman Sarker,
+Ben Schwartz,
+and
+Christopher A. Wood
+for their input.<a href="#section-appendix.a-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="section-appendix.b">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">David Schinazi</span></div>
+<div dir="auto" class="left"><span class="org">Google LLC</span></div>
+<div dir="auto" class="left"><span class="street-address">1600 Amphitheatre Parkway</span></div>
+<div dir="auto" class="left">
+<span class="locality">Mountain View, California 94043</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:dschinazi.ietf@gmail.com" class="email">dschinazi.ietf@gmail.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>@import url('https://martinthomson.github.io/i-d-template/fonts.css');
+
+html {
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --small-font-size: 14.5px;
+}
+body {
+  max-width: 624px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
   display: none;
 }
-@media screen and (min-width: 800px) {
-  /* "Fork me on GitHub" CSS ribbon based on
-   * https://github.com/simonwhitaker/github-fork-ribbon-css
-   */
-  .github-fork-ribbon {
-    position: absolute;
-    padding: 2px 0;
-    background-color: #a00;
-    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
-    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
-    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-    pointer-events: auto;
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+#title {
+  padding: 1em 0 0.2em;
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 26px;
+}
+h4, h5, h6 {
+  font-size: 18px;
+  line-height: 22px;
+}
 
-    top: 38px;
-    right: -45px;
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p, #abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 18px;
+  line-height: 24px;
+}
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
 
-    transform: rotate(45deg);
-  }
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
 
-  .github-fork-ribbon a[href],
-  .github-fork-ribbon a[href]:hover {
-    color: #fff;
-    background-color: transparent;
-    text-decoration: none;
-    text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
 
-    width: 190px;
-    line-height: 18px;
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
 
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px 'Oxygen Mono', monospace;
+}
+pre {
+  border: 1px solid var(--line-color);
+  line-height: 17px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  pre {
     display: inline-block;
-    padding: 2px 0;
-
-    border: 1.5px dotted #fff;
-    border-color: rgba(255, 255, 255, 0.6);
+    overflow-x: auto;
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
   }
-
-  .github-fork-ribbon-wrapper {
+  figure pre {
     display: block;
-    width: 130px;
-    height: 130px;
-    position: absolute;
-    overflow: hidden;
-    top: 0; right: 0;
-    z-index: 2;
-    pointer-events: none;
+    width: calc(100% - 25px);
+  }
+  pre + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
   }
 }
-@media screen and (min-width: 1000px) {
-  .github-fork-ribbon-wrapper {
-    position: fixed;
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #eee;
+}
+tr:nth-child(2n) > td {
+  background-color: var(--background-color);
+}
+tr:nth-child(2n+1) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n+1) > td {
+  background-color: var(--background-color);
+}
+table caption {
+  font-style: italic;
+  margin: 0.3em 0;
+  padding: 0;
+  text-align: left;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  visibility: hidden;
+  user-select: none;
+}
+a.pilcrow[href] { color: #ddd; }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media screen {
+  :hover > a.pilcrow {
+    visibility: visible;
   }
-/*]]>*/</style>
-<meta name="viewport" content="initial-scale=1.0">
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
 
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+}
 
-  <link href="#rfc.toc" rel="Contents">
-<link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
-<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Conventions and Definitions">
-<link href="#rfc.section.2" rel="Chapter" title="2 Usage Scenarios">
-<link href="#rfc.section.2.1" rel="Chapter" title="2.1 Protection from Network Providers">
-<link href="#rfc.section.2.2" rel="Chapter" title="2.2 Protection from Web Servers">
-<link href="#rfc.section.2.3" rel="Chapter" title="2.3 Making a Home Server Available">
-<link href="#rfc.section.2.4" rel="Chapter" title="2.4 Onion Routing">
-<link href="#rfc.section.3" rel="Chapter" title="3 Requirements">
-<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Invisibility of Usage">
-<link href="#rfc.section.3.2" rel="Chapter" title="3.2 Invisibility of the Server">
-<link href="#rfc.section.3.3" rel="Chapter" title="3.3 Fallback to HTTP/2 over TLS over TCP">
-<link href="#rfc.section.4" rel="Chapter" title="4 Overview of the Mechanism">
-<link href="#rfc.section.5" rel="Chapter" title="5 Mechanisms the Server Can Advertise to Authenticated Clients">
-<link href="#rfc.section.5.1" rel="Chapter" title="5.1 HTTP Proxy">
-<link href="#rfc.section.5.2" rel="Chapter" title="5.2 DNS over HTTPS">
-<link href="#rfc.section.5.3" rel="Chapter" title="5.3 UDP Proxying">
-<link href="#rfc.section.5.4" rel="Chapter" title="5.4 QUIC Proxying">
-<link href="#rfc.section.5.5" rel="Chapter" title="5.5 IP Proxying">
-<link href="#rfc.section.5.6" rel="Chapter" title="5.6 Path MTU Discovery">
-<link href="#rfc.section.5.7" rel="Chapter" title="5.7 Service Registration">
-<link href="#rfc.section.6" rel="Chapter" title="6 Operation over HTTP/2">
-<link href="#rfc.section.7" rel="Chapter" title="7 Security Considerations">
-<link href="#rfc.section.7.1" rel="Chapter" title="7.1 Traffic Analysis">
-<link href="#rfc.section.7.2" rel="Chapter" title="7.2 Untrusted Servers">
-<link href="#rfc.section.8" rel="Chapter" title="8 IANA Considerations">
-<link href="#rfc.references" rel="Chapter" title="9 References">
-<link href="#rfc.references.1" rel="Chapter" title="9.1 Normative References">
-<link href="#rfc.references.2" rel="Chapter" title="9.2 Informative References">
-<link href="#rfc.acknowledgments" rel="Chapter">
-<link href="#rfc.design_justifications" rel="Chapter">
-<link href="#rfc.authors" rel="Chapter">
+.role {
+  font-variant: all-small-caps;
+}
 
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
 
-  <meta name="generator" content="xml2rfc version 2.19.0 - https://tools.ietf.org/tools/xml2rfc" />
-  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
 
-  <meta name="dct.creator" content="Schinazi, D." />
-  <meta name="dct.identifier" content="urn:ietf:id:draft-schinazi-masque" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-07-09" />
-  <meta name="dct.abstract" content="This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list masque@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/masque-drafts." />
-  <meta name="description" content="This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list masque@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/masque-drafts." />
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
 
-</head>
+.refInstance {
+  margin-bottom: 1.25em;
+}
 
-<body>
+.references .ascii {
+  margin-bottom: 0.25em;
+}
 
-  <table class="header">
-    <tbody>
-    
-    	<tr>
-<td class="left">Network Working Group</td>
-<td class="right">D. Schinazi</td>
-</tr>
-<tr>
-<td class="left">Internet-Draft</td>
-<td class="right">Google LLC</td>
-</tr>
-<tr>
-<td class="left">Intended status: Experimental</td>
-<td class="right">July 09, 2019</td>
-</tr>
-<tr>
-<td class="left">Expires: January 10, 2020</td>
-<td class="right"></td>
-</tr>
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .index ul ul {
+    column-count: 1;
+    column-gap: 0;
+  }
+}
 
-    	
-    </tbody>
-  </table>
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 600px) {
+  #authors-addresses {
+    display: relative;
+    padding: 32px 0 0;
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #name-authors-addresses {
+    position: absolute;
+    top: 0px;
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+  }
+}
 
-  <p class="title">The MASQUE Protocol<br />
-  <span class="filename">draft-schinazi-masque</span></p>
-  
-  <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
-<p>This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.</p>
-<p>This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list <a href="mailto:masque@ietf.org">masque@ietf.org</a> or on the GitHub repository which contains the draft: <a href="https://github.com/DavidSchinazi/masque-drafts">https://github.com/DavidSchinazi/masque-drafts</a>.</p>
-<h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
-<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
-<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
-<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on January 10, 2020.</p>
-<h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
-<p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
-<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #b76427;
+  background-color: rgba(249, 232, 105, 0.3);
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: rgba(249, 232, 105, 0.3);
+  border-radius: 3px;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 953px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
 
-  
-  <hr class="noprint" />
-  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
-  <ul class="toc">
+/* alternative layout for wide screens */
+@media screen and (min-width: 954px) {
+  body {
+    padding-right: 380px;
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul p, #toc ul li {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
 
-  	<li>1.   <a href="#rfc.section.1">Introduction</a>
-</li>
-<ul><li>1.1.   <a href="#rfc.section.1.1">Conventions and Definitions</a>
-</li>
-</ul><li>2.   <a href="#rfc.section.2">Usage Scenarios</a>
-</li>
-<ul><li>2.1.   <a href="#rfc.section.2.1">Protection from Network Providers</a>
-</li>
-<li>2.2.   <a href="#rfc.section.2.2">Protection from Web Servers</a>
-</li>
-<li>2.3.   <a href="#rfc.section.2.3">Making a Home Server Available</a>
-</li>
-<li>2.4.   <a href="#rfc.section.2.4">Onion Routing</a>
-</li>
-</ul><li>3.   <a href="#rfc.section.3">Requirements</a>
-</li>
-<ul><li>3.1.   <a href="#rfc.section.3.1">Invisibility of Usage</a>
-</li>
-<li>3.2.   <a href="#rfc.section.3.2">Invisibility of the Server</a>
-</li>
-<li>3.3.   <a href="#rfc.section.3.3">Fallback to HTTP/2 over TLS over TCP</a>
-</li>
-</ul><li>4.   <a href="#rfc.section.4">Overview of the Mechanism</a>
-</li>
-<li>5.   <a href="#rfc.section.5">Mechanisms the Server Can Advertise to Authenticated Clients</a>
-</li>
-<ul><li>5.1.   <a href="#rfc.section.5.1">HTTP Proxy</a>
-</li>
-<li>5.2.   <a href="#rfc.section.5.2">DNS over HTTPS</a>
-</li>
-<li>5.3.   <a href="#rfc.section.5.3">UDP Proxying</a>
-</li>
-<li>5.4.   <a href="#rfc.section.5.4">QUIC Proxying</a>
-</li>
-<li>5.5.   <a href="#rfc.section.5.5">IP Proxying</a>
-</li>
-<li>5.6.   <a href="#rfc.section.5.6">Path MTU Discovery</a>
-</li>
-<li>5.7.   <a href="#rfc.section.5.7">Service Registration</a>
-</li>
-</ul><li>6.   <a href="#rfc.section.6">Operation over HTTP/2</a>
-</li>
-<li>7.   <a href="#rfc.section.7">Security Considerations</a>
-</li>
-<ul><li>7.1.   <a href="#rfc.section.7.1">Traffic Analysis</a>
-</li>
-<li>7.2.   <a href="#rfc.section.7.2">Untrusted Servers</a>
-</li>
-</ul><li>8.   <a href="#rfc.section.8">IANA Considerations</a>
-</li>
-<li>9.   <a href="#rfc.references">References</a>
-</li>
-<ul><li>9.1.   <a href="#rfc.references.1">Normative References</a>
-</li>
-<li>9.2.   <a href="#rfc.references.2">Informative References</a>
-</li>
-</ul><li><a href="#rfc.acknowledgments">Acknowledgments</a>
-</li>
-<li><a href="#rfc.design_justifications">Design Justifications</a>
-</li>
-<li><a href="#rfc.authors">Author's Address</a>
-</li>
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
 
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
 
-  </ul>
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
 
-  <h1 id="rfc.section.1">
-<a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
-</h1>
-<p id="rfc.section.1.p.1">This document describes MASQUE (Multiplexed Application Substrate over QUIC Encryption). MASQUE is a mechanism that allows co-locating and obfuscating networking applications behind an HTTPS web server. The currently prevalent use-case is to allow running a proxy or VPN server that is indistinguishable from an HTTPS server to any unauthenticated observer. We do not expect major providers and CDNs to deploy this behind their main TLS certificate, as they are not willing to take the risk of getting blocked, as shown when domain fronting was blocked. An expected use would be for individuals to enable this behind their personal websites via easy to configure open-source software.</p>
-<p id="rfc.section.1.p.2">This document is a straw-man proposal. It does not contain enough details to implement the protocol, and is currently intended to spark discussions on the approach it is taking. Discussion of this work is encouraged to happen on the MASQUE IETF mailing list <a href="mailto:masque@ietf.org">masque@ietf.org</a> or on the GitHub repository which contains the draft: <a href="https://github.com/DavidSchinazi/masque-drafts">https://github.com/DavidSchinazi/masque-drafts</a>.</p>
-<p id="rfc.section.1.p.3">MASQUE leverages the efficient head-of-line blocking prevention features of the QUIC transport protocol <a href="#I-D.ietf-quic-transport" class="xref">[I-D.ietf-quic-transport]</a> when MASQUE is used in an HTTP/3 <a href="#I-D.ietf-quic-http" class="xref">[I-D.ietf-quic-http]</a> server. MASQUE can also run in an HTTP/2 server <a href="#RFC7540" class="xref">[RFC7540]</a> but at a performance cost.</p>
-<h1 id="rfc.section.1.1">
-<a href="#rfc.section.1.1">1.1.</a> <a href="#conventions" id="conventions">Conventions and Definitions</a>
-</h1>
-<p id="rfc.section.1.1.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in BCP 14 <a href="#RFC2119" class="xref">[RFC2119]</a> <a href="#RFC8174" class="xref">[RFC8174]</a> when, and only when, they appear in all capitals, as shown here.</p>
-<h1 id="rfc.section.2">
-<a href="#rfc.section.2">2.</a> <a href="#usage-scenarios" id="usage-scenarios">Usage Scenarios</a>
-</h1>
-<p id="rfc.section.2.p.1">There are currently multiple usage scenarios that can benefit from MASQUE.</p>
-<h1 id="rfc.section.2.1">
-<a href="#rfc.section.2.1">2.1.</a> <a href="#protection-providers" id="protection-providers">Protection from Network Providers</a>
-</h1>
-<p id="rfc.section.2.1.p.1">Some users may wish to obfuscate the destination of their network traffic from their network provider. This prevents network providers from using data harvested from this network traffic in ways the user did not intend.</p>
-<h1 id="rfc.section.2.2">
-<a href="#rfc.section.2.2">2.2.</a> <a href="#protection-servers" id="protection-servers">Protection from Web Servers</a>
-</h1>
-<p id="rfc.section.2.2.p.1">There are many clients who would rather not establish a direct connection to web servers, for example to avoid location tracking. The clients can do that by running their traffic through a MASQUE server. The web server will only see the IP address of the MASQUE server, not that of the client.</p>
-<h1 id="rfc.section.2.3">
-<a href="#rfc.section.2.3">2.3.</a> <a href="#home-server" id="home-server">Making a Home Server Available</a>
-</h1>
-<p id="rfc.section.2.3.p.1">It is often difficult to connect to a home server. The IP address might change over time. Firewalls in the home router or in the network may block incoming connections. Using a MASQUE server as a rendez-vous point helps resolve these issues.</p>
-<h1 id="rfc.section.2.4">
-<a href="#rfc.section.2.4">2.4.</a> <a href="#onion" id="onion">Onion Routing</a>
-</h1>
-<p id="rfc.section.2.4.p.1">Routing traffic through a MASQUE server only provides partial protection against tracking, because the MASQUE server knows the address of the client.  Onion routing as it exists today mitigates this issue for TCP/TLS. A MASQUE server could allow onion routing over QUIC.</p>
-<p id="rfc.section.2.4.p.2">In this scenario, the client establishes a connection to the MASQUE server, then through that to another MASQUE server, etc. This creates a tree of MASQUE servers rooted at the client. QUIC connections are mapped to a specific branch of the tree. The first MASQUE server knows the actual address of the client, but the other MASQUE servers only know the address of the previous server.  To assure reasonable privacy, the path should include at least 3 MASQUE servers.</p>
-<h1 id="rfc.section.3">
-<a href="#rfc.section.3">3.</a> <a href="#requirements" id="requirements">Requirements</a>
-</h1>
-<p id="rfc.section.3.p.1">This section describes the goals and requirements chosen for the MASQUE protocol.</p>
-<h1 id="rfc.section.3.1">
-<a href="#rfc.section.3.1">3.1.</a> <a href="#invisibility-usage" id="invisibility-usage">Invisibility of Usage</a>
-</h1>
-<p id="rfc.section.3.1.p.1">An authenticated client using MASQUE features appears to observers as a regular HTTPS client. Observers only see that HTTP/3 or HTTP/2 is being used over an encrypted channel. No part of the exchanges between client and server may stick out. Note that traffic analysis is discussed in <a href="#traffic-analysis" class="xref">Section 7.1</a>.</p>
-<h1 id="rfc.section.3.2">
-<a href="#rfc.section.3.2">3.2.</a> <a href="#invisibility-server" id="invisibility-server">Invisibility of the Server</a>
-</h1>
-<p id="rfc.section.3.2.p.1">To anyone without private keys, the server is indistinguishable from a regular web server. It is impossible to send an unauthenticated probe that the server would reply to differently than if it were a normal web server.</p>
-<h1 id="rfc.section.3.3">
-<a href="#rfc.section.3.3">3.3.</a> <a href="#fallback-h2" id="fallback-h2">Fallback to HTTP/2 over TLS over TCP</a>
-</h1>
-<p id="rfc.section.3.3.p.1">When QUIC is blocked, MASQUE can run over TCP and still satisfy previous requirements. Note that in this scenario performance may be negatively impacted.</p>
-<h1 id="rfc.section.4">
-<a href="#rfc.section.4">4.</a> <a href="#overview" id="overview">Overview of the Mechanism</a>
-</h1>
-<p id="rfc.section.4.p.1">The server runs an HTTPS server on port 443, and has a valid TLS certificate for its domain. The client has a public/private key pair, and the server maintains a list of authorized MASQUE clients, and their public key.  (Alternatively, clients can also be authenticated using a shared secret.) The client starts by establishing a regular HTTPS connection to the server (HTTP/3 over QUIC or HTTP/2 over TLS 1.3 <a href="#RFC8446" class="xref">[RFC8446]</a> over TCP), and validates the server&#8217;s TLS certificate as it normally would for HTTPS. If validation fails, the connection is aborted. At this point the client can send regular unauthenticated HTTP requests to the server. When it wishes to start MASQUE, the client uses HTTP Transport Authentication <a href="#I-D.schinazi-httpbis-transport-auth" class="xref">[I-D.schinazi-httpbis-transport-auth]</a> to prove its possession of its associated key. The client sends the Transport-Authentication header alongside an HTTP CONNECT request for &#8220;/.well-known/masque/initial&#8221; with the :protocol pseudo-header field set to &#8220;masque&#8221;.</p>
-<p id="rfc.section.4.p.2">When the server receives this CONNECT request, it authenticates the client and if that fails responds with code &#8220;405 Method Not Allowed&#8221;, making sure its response is the same as what it would return for any unexpected CONNECT request. If authentication succeeds, the server responds with code &#8220;101 Switching Protocols&#8221;, and from then on this HTTP stream is now dedicated to the MASQUE protocol. That protocol provides a reliable bidirectional message exchange mechanism, which is used by the client and server to negotiate what protocol options are supported and enabled by policy, and client VPN configuration such as IP addresses. When using QUIC, this protocol also allows endpoints to negotiate the use of QUIC extensions, such as support for the DATAGRAM extension <a href="#I-D.pauly-quic-datagram" class="xref">[I-D.pauly-quic-datagram]</a>.</p>
-<p id="rfc.section.4.p.3">Clients MUST NOT attempt to &#8220;resume&#8221; MASQUE state similarly to how TLS sessions can be resumed. Every new QUIC or TLS connection requires fully authenticating the client and server. QUIC 0-RTT and TLS early data MUST NOT be used with MASQUE as they are not forward secure.</p>
-<h1 id="rfc.section.5">
-<a href="#rfc.section.5">5.</a> <a href="#mechanisms" id="mechanisms">Mechanisms the Server Can Advertise to Authenticated Clients</a>
-</h1>
-<p id="rfc.section.5.p.1">Once a server has authenticated the client&#8217;s MASQUE CONNECT request, it advertises services that the client may use.</p>
-<h1 id="rfc.section.5.1">
-<a href="#rfc.section.5.1">5.1.</a> <a href="#http-proxy" id="http-proxy">HTTP Proxy</a>
-</h1>
-<p id="rfc.section.5.1.p.1">The client can make proxied HTTP requests through the server to other servers. In practice this will mean using the CONNECT method to establish a stream over which to run TLS to a different remote destination. The proxy applies back-pressure to streams in both directions.</p>
-<h1 id="rfc.section.5.2">
-<a href="#rfc.section.5.2">5.2.</a> <a href="#doh" id="doh">DNS over HTTPS</a>
-</h1>
-<p id="rfc.section.5.2.p.1">The client can send DNS queries using DNS over HTTPS (DoH) <a href="#RFC8484" class="xref">[RFC8484]</a> to the MASQUE server.</p>
-<h1 id="rfc.section.5.3">
-<a href="#rfc.section.5.3">5.3.</a> <a href="#udp-proxy" id="udp-proxy">UDP Proxying</a>
-</h1>
-<p id="rfc.section.5.3.p.1">In order to support WebRTC or QUIC to further servers, clients need a way to relay UDP onwards to a remote server. In practice for most widely deployed protocols other than DNS, this involves many datagrams over the same ports.  Therefore this mechanism implements that efficiently: clients can use the MASQUE protocol stream to request an UDP association to an IP address and UDP port pair. In QUIC, the server would reply with a DATAGRAM_ID that the client can then use to have UDP datagrams sent to this remote server.  Datagrams are then simply transferred between the DATAGRAMs with this ID and the outer server. There will also be a message on the MASQUE protocol stream to request shutdown of a UDP association to save resources when it is no longer needed. When running over TCP, the client opens a new stream with a CONNECT request to the &#8220;masque-udp-proxy&#8221; protocol and then sends datagrams encapsulated inside the stream with a two-byte length prefix in network byte order. The target IP and port are sent as part of the URL query. Resetting that stream instructs the server to release any associates resources.</p>
-<h1 id="rfc.section.5.4">
-<a href="#rfc.section.5.4">5.4.</a> <a href="#quic-proxy" id="quic-proxy">QUIC Proxying</a>
-</h1>
-<p id="rfc.section.5.4.p.1">By leveraging QUIC client connection IDs, a MASQUE server can act as a QUIC proxy while only using one UDP port. The server informs the client of a scheme for client connection IDs (for example, random of a minimum length or vended by the MASQUE server) and then the server can forward those packets to further web servers.</p>
-<p id="rfc.section.5.4.p.2">This mechanism can elide the connection IDs on the link between the client and MASQUE server by negotiating a mapping between DATAGRAM_IDs and the tuple (client connection ID, server connection ID, server IP address, server port).</p>
-<p id="rfc.section.5.4.p.3">Compared to UDP proxying, this mode has the advantage of only requiring one UDP port to be open on the MASQUE server, and can lower the overhead on the link between client and MASQUE server by compressing connection IDs.</p>
-<h1 id="rfc.section.5.5">
-<a href="#rfc.section.5.5">5.5.</a> <a href="#ip-proxy" id="ip-proxy">IP Proxying</a>
-</h1>
-<p id="rfc.section.5.5.p.1">For the rare cases where the previous mechanisms are not sufficient, proxying can be performed at the IP layer. This would use a different DATAGRAM_ID and IP datagrams would be encoded inside it without framing. Over TCP, a dedicated stream with two byte length prefix would be used. The server can inspect the IP datagram to look for the destination address in the IP header.</p>
-<h1 id="rfc.section.5.6">
-<a href="#rfc.section.5.6">5.6.</a> <a href="#pmtud" id="pmtud">Path MTU Discovery</a>
-</h1>
-<p id="rfc.section.5.6.p.1">In the main deployment of this mechanism, QUIC will be used between client and server, and that will most likely be the smallest MTU link in the path due to QUIC header and authentication tag overhead. The client is responsible for not sending overly large UDP packets and notifying the server of the low MTU. Therefore PMTUD is currently seen as out of scope of this document.</p>
-<h1 id="rfc.section.5.7">
-<a href="#rfc.section.5.7">5.7.</a> <a href="#service-registration" id="service-registration">Service Registration</a>
-</h1>
-<p id="rfc.section.5.7.p.1">MASQUE can be used to make a home server accessible on the wide area. The home server authenticates to the MASQUE server and registers a domain name it wishes to serve. The MASQUE server can then forward any traffic it receives for that domain name (by inspecting the TLS Server Name Indication (SNI) extension) to the home server. This received traffic is not authenticated and it allows non-modified clients to communicate with the home server without knowing it is not colocated with the MASQUE server.</p>
-<p id="rfc.section.5.7.p.2">To help obfuscate the home server, deployments can use Encrypted Server Name Indication (ESNI) <a href="#I-D.ietf-tls-esni" class="xref">[I-D.ietf-tls-esni]</a>. That will require the MASQUE server sending the cleartext SNI to the home server.</p>
-<h1 id="rfc.section.6">
-<a href="#rfc.section.6">6.</a> <a href="#http2" id="http2">Operation over HTTP/2</a>
-</h1>
-<p id="rfc.section.6.p.1">MASQUE implementations using HTTP/3 MUST support the fallback to HTTP/2 to avoid incentivizing censors to block HTTP/3 or QUIC. When running over HTTP/2, MASQUE uses the Extended CONNECT method to negotiate the use of datagrams over an HTTP/2 stream <a href="#I-D.kinnear-httpbis-http2-transport" class="xref">[I-D.kinnear-httpbis-http2-transport]</a>.</p>
-<p id="rfc.section.6.p.2">MASQUE implementations SHOULD discover that HTTP/3 is available (as opposed to only HTTP/2) using the same mechanism as regular HTTP traffic. This current standardized mechanism for this is HTTP Alternative Services <a href="#RFC7838" class="xref">[RFC7838]</a>, but future mechanisms such as <a href="#I-D.schwartz-httpbis-dns-alt-svc" class="xref">[I-D.schwartz-httpbis-dns-alt-svc]</a> can be used if they become widespread.</p>
-<h1 id="rfc.section.7">
-<a href="#rfc.section.7">7.</a> <a href="#security" id="security">Security Considerations</a>
-</h1>
-<p id="rfc.section.7.p.1">Here be dragons. TODO: slay the dragons.</p>
-<h1 id="rfc.section.7.1">
-<a href="#rfc.section.7.1">7.1.</a> <a href="#traffic-analysis" id="traffic-analysis">Traffic Analysis</a>
-</h1>
-<p id="rfc.section.7.1.p.1">While MASQUE ensures that proxied traffic appears similar to regular HTTP traffic, it doesn&#8217;t inherently defeat traffic analysis. However, the fact that MASQUE leverages QUIC allows it to segment STREAM frames over multiple packets and add PADDING frames to change the observable characteristics of its encrypted traffic. The exact details of how to change traffic patterns to defeat traffic analysis is considered an open research question and is out of scope for this document.</p>
-<p id="rfc.section.7.1.p.2">When multiple MASQUE servers are available, a client can leverage QUIC connection migration to seamlessly transition its end-to-end QUIC connections by treating separate MASQUE servers as different paths. This could afford an additional level of obfuscation in hopes of rendering traffic analysis less effective.</p>
-<h1 id="rfc.section.7.2">
-<a href="#rfc.section.7.2">7.2.</a> <a href="#untrusted-servers" id="untrusted-servers">Untrusted Servers</a>
-</h1>
-<p id="rfc.section.7.2.p.1">As with any proxy or VPN technology, MASQUE hides some of the client&#8217;s private information (such as who they are communicating with) from their network provider by transferring that information to the MASQUE server. It is paramount that clients only use MASQUE servers that they trust, as a malicious actor could easily setup a MASQUE server and advertise it as a privacy solution in hopes of attracting users to send it their traffic.</p>
-<h1 id="rfc.section.8">
-<a href="#rfc.section.8">8.</a> <a href="#iana" id="iana">IANA Considerations</a>
-</h1>
-<p id="rfc.section.8.p.1">We will need to register:</p>
-<p></p>
+/* Changes introduced to fix issues found during implementation */
 
-<ul><li>the &#8220;/.well-known/masque/&#8221; URI (expert review)</li></ul>
-<p><a href="https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml">https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml</a></p>
-<p></p>
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
 
-<ul><li>The &#8220;masque&#8221; and &#8220;masque-udp-proxy&#8221; extended HTTP CONNECT protocols</li></ul>
-<p id="rfc.section.8.p.5">We will also need to define the MASQUE control protocol and that will be likely to define new registries of its own.</p>
-<h1 id="rfc.references">
-<a href="#rfc.references">9.</a> References</h1>
-<h1 id="rfc.references.1">
-<a href="#rfc.references.1">9.1.</a> Normative References</h1>
-<table><tbody>
-<tr>
-<td class="reference"><b id="I-D.ietf-quic-http">[I-D.ietf-quic-http]</b></td>
-<td class="top">
-<a>Bishop, M.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-http-20">Hypertext Transfer Protocol Version 3 (HTTP/3)</a>", Internet-Draft draft-ietf-quic-http-20, April 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.ietf-quic-transport">[I-D.ietf-quic-transport]</b></td>
-<td class="top">
-<a>Iyengar, J.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-transport-22">QUIC: A UDP-Based Multiplexed and Secure Transport</a>", Internet-Draft draft-ietf-quic-transport-22, July 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.kinnear-httpbis-http2-transport">[I-D.kinnear-httpbis-http2-transport]</b></td>
-<td class="top">
-<a>Kinnear, E.</a> and <a>T. Pauly</a>, "<a href="https://tools.ietf.org/html/draft-kinnear-httpbis-http2-transport-01">Using HTTP/2 as a Transport for Arbitrary Bytestreams</a>", Internet-Draft draft-kinnear-httpbis-http2-transport-01, March 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.pauly-quic-datagram">[I-D.pauly-quic-datagram]</b></td>
-<td class="top">
-<a>Pauly, T.</a>, <a>Kinnear, E.</a> and <a>D. Schinazi</a>, "<a href="https://tools.ietf.org/html/draft-pauly-quic-datagram-03">An Unreliable Datagram Extension to QUIC</a>", Internet-Draft draft-pauly-quic-datagram-03, July 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.schinazi-httpbis-transport-auth">[I-D.schinazi-httpbis-transport-auth]</b></td>
-<td class="top">
-<a>Schinazi, D.</a>, "<a href="https://tools.ietf.org/html/draft-schinazi-httpbis-transport-auth-00">HTTP Transport Authentication</a>", Internet-Draft draft-schinazi-httpbis-transport-auth-00, July 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC2119">[RFC2119]</b></td>
-<td class="top">
-<a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC7540">[RFC7540]</b></td>
-<td class="top">
-<a>Belshe, M.</a>, <a>Peon, R.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/rfc7540">Hypertext Transfer Protocol Version 2 (HTTP/2)</a>", RFC 7540, DOI 10.17487/RFC7540, May 2015.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC7838">[RFC7838]</b></td>
-<td class="top">
-<a>Nottingham, M.</a>, <a>McManus, P.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7838">HTTP Alternative Services</a>", RFC 7838, DOI 10.17487/RFC7838, April 2016.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC8174">[RFC8174]</b></td>
-<td class="top">
-<a>Leiba, B.</a>, "<a href="https://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC8446">[RFC8446]</b></td>
-<td class="top">
-<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/rfc8446">The Transport Layer Security (TLS) Protocol Version 1.3</a>", RFC 8446, DOI 10.17487/RFC8446, August 2018.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC8484">[RFC8484]</b></td>
-<td class="top">
-<a>Hoffman, P.</a> and <a>P. McManus</a>, "<a href="https://tools.ietf.org/html/rfc8484">DNS Queries over HTTPS (DoH)</a>", RFC 8484, DOI 10.17487/RFC8484, October 2018.</td>
-</tr>
-</tbody></table>
-<h1 id="rfc.references.2">
-<a href="#rfc.references.2">9.2.</a> Informative References</h1>
-<table><tbody>
-<tr>
-<td class="reference"><b id="I-D.ietf-httpbis-http2-secondary-certs">[I-D.ietf-httpbis-http2-secondary-certs]</b></td>
-<td class="top">
-<a>Bishop, M.</a>, <a>Sullivan, N.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/draft-ietf-httpbis-http2-secondary-certs-04">Secondary Certificate Authentication in HTTP/2</a>", Internet-Draft draft-ietf-httpbis-http2-secondary-certs-04, April 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.ietf-tls-esni">[I-D.ietf-tls-esni]</b></td>
-<td class="top">
-<a>Rescorla, E.</a>, <a>Oku, K.</a>, <a>Sullivan, N.</a> and <a>C. Wood</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-esni-04">Encrypted Server Name Indication for TLS 1.3</a>", Internet-Draft draft-ietf-tls-esni-04, July 2019.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.pardue-httpbis-http-network-tunnelling">[I-D.pardue-httpbis-http-network-tunnelling]</b></td>
-<td class="top">
-<a>Pardue, L.</a>, "<a href="https://tools.ietf.org/html/draft-pardue-httpbis-http-network-tunnelling-01">HTTP-initiated Network Tunnelling (HiNT)</a>", Internet-Draft draft-pardue-httpbis-http-network-tunnelling-01, October 2018.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.schwartz-httpbis-dns-alt-svc">[I-D.schwartz-httpbis-dns-alt-svc]</b></td>
-<td class="top">
-<a>Schwartz, B.</a> and <a>M. Bishop</a>, "<a href="https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc-02">Finding HTTP Alternative Services via the Domain Name Service</a>", Internet-Draft draft-schwartz-httpbis-dns-alt-svc-02, April 2018.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.schwartz-httpbis-helium">[I-D.schwartz-httpbis-helium]</b></td>
-<td class="top">
-<a>Schwartz, B.</a>, "<a href="https://tools.ietf.org/html/draft-schwartz-httpbis-helium-00">Hybrid Encapsulation Layer for IP and UDP Messages (HELIUM)</a>", Internet-Draft draft-schwartz-httpbis-helium-00, June 2018.</td>
-</tr>
-<tr>
-<td class="reference"><b id="I-D.sullivan-tls-post-handshake-auth">[I-D.sullivan-tls-post-handshake-auth]</b></td>
-<td class="top">
-<a>Sullivan, N.</a>, <a>Thomson, M.</a> and <a>M. Bishop</a>, "<a href="https://tools.ietf.org/html/draft-sullivan-tls-post-handshake-auth-00">Post-Handshake Authentication in TLS</a>", Internet-Draft draft-sullivan-tls-post-handshake-auth-00, August 2016.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC8441">[RFC8441]</b></td>
-<td class="top">
-<a>McManus, P.</a>, "<a href="https://tools.ietf.org/html/rfc8441">Bootstrapping WebSockets with HTTP/2</a>", RFC 8441, DOI 10.17487/RFC8441, September 2018.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC8471">[RFC8471]</b></td>
-<td class="top">
-<a>Popov, A.</a>, <a>Nystroem, M.</a>, <a>Balfanz, D.</a> and <a>J. Hodges</a>, "<a href="https://tools.ietf.org/html/rfc8471">The Token Binding Protocol Version 1.0</a>", RFC 8471, DOI 10.17487/RFC8471, October 2018.</td>
-</tr>
-</tbody></table>
-<h1 id="rfc.acknowledgments"><a href="#rfc.acknowledgments">Acknowledgments</a></h1>
-<p id="rfc.section.A.p.1">This proposal was inspired directly or indirectly by prior work from many people. In particular, this work is related to <a href="#I-D.schwartz-httpbis-helium" class="xref">[I-D.schwartz-httpbis-helium]</a> and <a href="#I-D.pardue-httpbis-http-network-tunnelling" class="xref">[I-D.pardue-httpbis-http-network-tunnelling]</a>. The mechanism used to run the MASQUE protocol over HTTP/2 streams was inspired by <a href="#RFC8441" class="xref">[RFC8441]</a>.  Brendan Moran is to thank for the idea of leveraging connection migration across MASQUE servers.</p>
-<p id="rfc.section.A.p.2">The author would like to thank Christophe A., an inspiration and true leader of VPNs.</p>
-<h1 id="rfc.design_justifications"><a href="#rfc.design_justifications">Design Justifications</a></h1>
-<p id="rfc.section.B.p.1">Using an exported key as a nonce allows us to prevent replay attacks (since it depends on randomness from both endpoints of the TLS connection) without requiring the server to send an explicit nonce before it has authenticated the client. Adding an explicit nonce mechanism would expose the server as it would need to send these nonces to clients that have not been authenticated yet.</p>
-<p id="rfc.section.B.p.2">The rationale for a separate MASQUE protocol stream is to allow server-initiated messages. If we were to use HTTP semantics, we would only be able to support the client-initiated request-response model. We could have used WebSocket for this purpose but that would have added wire overhead and dependencies without providing useful features.</p>
-<p id="rfc.section.B.p.3">There are many other ways to authenticate HTTP, however the authentication used here needs to work in a single client-initiated message to meet the requirement of not exposing the server.</p>
-<p id="rfc.section.B.p.4">The current proposal would also work with TLS 1.2, but in that case TLS false start and renegotiation must be disabled, and the extended master secret and renegotiation indication TLS extensions must be enabled.</p>
-<p id="rfc.section.B.p.5">If the server or client want to hide that HTTP/2 is used, the client can set its ALPN to an older version of HTTP and then use the Upgrade header to upgrade to HTTP/2 inside the TLS encryption.</p>
-<p id="rfc.section.B.p.6">The client authentication used here is similar to how Token Binding <a href="#RFC8471" class="xref">[RFC8471]</a> operates, but it has very different goals. MASQUE does not use token binding directly because using token binding requires sending the token_binding TLS extension in the TLS ClientHello, and that would stick out compared to a regular TLS connection.</p>
-<p id="rfc.section.B.p.7">TLS post-handshake authentication <a href="#I-D.sullivan-tls-post-handshake-auth" class="xref">[I-D.sullivan-tls-post-handshake-auth]</a> is not used by this proposal because that requires sending the &#8220;post_handshake_auth&#8221; extension in the TLS ClientHello, and that would stick out from a regular HTTPS connection.</p>
-<p id="rfc.section.B.p.8">Client authentication could have benefited from Secondary Certificate Authentication in HTTP/2 <a href="#I-D.ietf-httpbis-http2-secondary-certs" class="xref">[I-D.ietf-httpbis-http2-secondary-certs]</a>, however that has two downsides: it requires the server advertising that it supports it in its SETTINGS, and it cannot be sent unprompted by the client, so the server would have to request authentication.  Both of these would make the server stick out from regular HTTP/2 servers.</p>
-<p id="rfc.section.B.p.9">MASQUE proposes a new client authentication method (as opposed to reusing something like HTTP basic authentication) because HTTP authentication methods are conceptually per-request (they need to be repeated on each request) whereas the new method is bound to the underlying connection (be it QUIC or TLS). In particular, this allows sending QUIC DATAGRAM frames without authenticating every frame individually. Additionally, HMAC and asymmetric keying are preferred to sending a password for client authentication since they have a tighter security bound. Going into the design rationale, HMACs (and signatures) need some data to sign, and to avoid replay attacks that should be a fresh nonce provided by the remote peer. Having the server provide an explicit nonce would leak the existence of the server so we use TLS keying material exporters as they provide us with a nonce that contains entropy from the server without requiring explicit communication.</p>
-<h1 id="rfc.authors"><a href="#rfc.authors">Author's Address</a></h1>
-<div class="avoidbreak">
-  <address class="vcard">
-	<span class="vcardline">
-	  <span class="fn">David Schinazi</span> 
-	  <span class="n hidden">
-		<span class="family-name">Schinazi</span>
-	  </span>
-	</span>
-	<span class="org vcardline">Google LLC</span>
-	<span class="adr">
-	  <span class="vcardline">1600 Amphitheatre Parkway</span>
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
 
-	  <span class="vcardline">
-		<span class="locality">Mountain View, California 94043</span>,  
-		<span class="region"></span>
-		<span class="code"></span>
-	  </span>
-	  <span class="country-name vcardline">United States of America</span>
-	</span>
-	<span class="vcardline">EMail: <a href="mailto:dschinazi.ietf@gmail.com">dschinazi.ietf@gmail.com</a></span>
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
 
-  </address>
-</div>
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
 
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</script>
 </body>
 </html>

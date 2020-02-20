@@ -4,8 +4,8 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                              July 08, 2019
-Expires: January 9, 2020
+Intended status: Experimental                             6 January 2020
+Expires: 9 July 2020
 
 
                      HTTP Transport Authentication
@@ -37,55 +37,45 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 9, 2020.
+   This Internet-Draft will expire on 9 July 2020.
 
 Copyright Notice
 
-   Copyright (c) 2019 IETF Trust and the persons identified as the
+   Copyright (c) 2020 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents
-   (https://trustee.ietf.org/license-info) in effect on the date of
-   publication of this document.  Please review these documents
-   carefully, as they describe your rights and restrictions with respect
-   to this document.  Code Components extracted from this document must
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 1]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
-   include Simplified BSD License text as described in Section 4.e of
-   the Trust Legal Provisions and are provided without warranty as
-   described in the Simplified BSD License.
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Simplified BSD License text
+   as described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Simplified BSD License.
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-     1.1.  Conventions and Definitions . . . . . . . . . . . . . . .   3
-   2.  Computing the Authentication Proof  . . . . . . . . . . . . .   3
-   3.  Header Field Definition . . . . . . . . . . . . . . . . . . .   4
-     3.1.  The u Directive . . . . . . . . . . . . . . . . . . . . .   4
-     3.2.  The p Directive . . . . . . . . . . . . . . . . . . . . .   4
-     3.3.  The a Directive . . . . . . . . . . . . . . . . . . . . .   4
-   4.  Transport Authentication Schemes  . . . . . . . . . . . . . .   4
-     4.1.  Signature . . . . . . . . . . . . . . . . . . . . . . . .   4
-     4.2.  HMAC  . . . . . . . . . . . . . . . . . . . . . . . . . .   5
-   5.  Proxy Considerations  . . . . . . . . . . . . . . . . . . . .   5
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
-     7.1.  Transport-Authentication Header Field . . . . . . . . . .   6
-     7.2.  Transport Authentication Schemes Registry . . . . . . . .   6
-     7.3.  TLS Keying Material Exporter Labels . . . . . . . . . . .   6
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   7
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .   8
-     8.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . .   9
-   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .   9
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   9
+   1.  Introduction
+       1.1.  Conventions and Definitions
+   2.  Computing the Authentication Proof
+   3.  Header Field Definition
+       3.1.  The u Directive
+       3.2.  The p Directive
+       3.3.  The a Directive
+   4.  Transport Authentication Schemes
+       4.1.  Signature
+       4.2.  HMAC
+   5.  Proxy Considerations
+   6.  Security Considerations
+   7.  IANA Considerations
+       7.1.  Transport-Authentication Header Field
+       7.2.  Transport Authentication Schemes Registry
+       7.3.  TLS Keying Material Exporter Labels
+   8.  References
+       8.1.  Normative References
+       8.2.  Informative References
+   Acknowledgments
+   Author's Address
 
 1.  Introduction
 
@@ -106,14 +96,6 @@ Table of Contents
    [I-D.pauly-quic-datagram] enable new uses of HTTP such as
    [I-D.vvv-webtransport-http3] and [I-D.schinazi-masque] where some
    traffic is exchanged that is disctinct from HTTP requests and
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 2]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
    responses.  In order to authenticate this traffic, it is necessary to
    authenticate the underlying transport (e.g., QUIC or TLS [RFC8446])
    instead of authenticate each request individually.  This mechanism
@@ -158,26 +140,14 @@ Internet-Draft        HTTP Transport Authentication            July 2019
    exporter is used to generate a 32-byte key which is then used as a
    nonce.
 
-
-
-
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 3]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
 3.  Header Field Definition
 
    The "Transport-Authentication" header allows a user agent to
    authenticate its transport connection with an origin server.
 
-  Transport-Authentication = transp-auth-scheme *( OWS ";" OWS parameter )
-  transp-auth-scheme       = token
-  parameter                = token "=" ( token / quoted-string )
+     Transport-Authentication = transp-auth-scheme *( OWS ";" OWS parameter )
+     transp-auth-scheme       = token
+     parameter                = token "=" ( token / quoted-string )
 
 3.1.  The u Directive
 
@@ -217,15 +187,6 @@ Internet-Draft        HTTP Transport Authentication            July 2019
    and "a" directives are REQUIRED.  The TLS keying material export
    label for this scheme is "EXPORTER-HTTP-Transport-Authentication-
    Signature" and the associated context is empty.  The nonce is then
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 4]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
    signed using the selected asymmetric signature algorithm and
    transmitted as the proof directive.
 
@@ -252,9 +213,9 @@ Internet-Draft        HTTP Transport Authentication            July 2019
    [RFC6234] could produce the following header (lines are folded to
    fit):
 
-Transport-Authentication: HMAC u="am9obi5kb2U=";a=2.16.840.1.101.3.4.2.3;
-p="SW5zZXJ0IEhNQUMgb2Ygbm9uY2UgaGVyZSB3aGljaCB0YWtl
-cyA1MTIgYml0cyBmb3IgU0hBLTUxMiEhISEhIQ=="
+   Transport-Authentication: HMAC u="am9obi5kb2U=";a=2.16.840.1.101.3.4.2.3;
+   p="SW5zZXJ0IEhNQUMgb2Ygbm9uY2UgaGVyZSB3aGljaCB0YWtl
+   cyA1MTIgYml0cyBmb3IgU0hBLTUxMiEhISEhIQ=="
 
 5.  Proxy Considerations
 
@@ -275,13 +236,6 @@ cyA1MTIgYml0cyBmb3IgU0hBLTUxMiEhISEhIQ=="
    authentication to observers due to clear-text TLS Client Hello
    extensions.
 
-
-
-Schinazi                 Expires January 9, 2020                [Page 5]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
 7.  IANA Considerations
 
 7.1.  Transport-Authentication Header Field
@@ -289,13 +243,13 @@ Internet-Draft        HTTP Transport Authentication            July 2019
    This document, if approved, requests IANA to register the "Transport-
    Authentication" header in the "Permanent Message Header Field Names"
    registry maintained at https://www.iana.org/assignments/message-
-   headers/ [1].
+   headers/ (https://www.iana.org/assignments/message-headers/).
 
-  +--------------------------+----------+--------------+---------------+
-  |    Header Field Name     | Protocol |    Status    |   Reference   |
-  +--------------------------+----------+--------------+---------------+
-  | Transport-Authentication |   http   | experimental | This document |
-  +--------------------------+----------+--------------+---------------+
+     +--------------------------+----------+--------------+---------------+
+     |    Header Field Name     | Protocol |    Status    |   Reference   |
+     +--------------------------+----------+--------------+---------------+
+     | Transport-Authentication |   http   | experimental | This document |
+     +--------------------------+----------+--------------+---------------+
 
 7.2.  Transport Authentication Schemes Registry
 
@@ -315,7 +269,8 @@ Internet-Draft        HTTP Transport Authentication            July 2019
    This document, if approved, requests IANA to register the following
    entries in the "TLS Exporter Labels" registry maintained at
    https://www.iana.org/assignments/tls-parameters/tls-
-   parameters.xhtml#exporter-labels [2]
+   parameters.xhtml#exporter-labels (https://www.iana.org/assignments/
+   tls-parameters/tls-parameters.xhtml#exporter-labels)
 
      +--------------------------------------------------+
      |                       Value                      |
@@ -326,17 +281,6 @@ Internet-Draft        HTTP Transport Authentication            July 2019
      +--------------------------------------------------+
 
    Both of these entries are listed with the following qualifiers:
-
-
-
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 6]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
 
      +---------+-------------+---------------+
      | DTLS-OK | Recommended |   Reference   |
@@ -384,16 +328,6 @@ Internet-Draft        HTTP Transport Authentication            July 2019
               RFC 7405, DOI 10.17487/RFC7405, December 2014,
               <https://www.rfc-editor.org/info/rfc7405>.
 
-
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 7]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
@@ -406,30 +340,43 @@ Internet-Draft        HTTP Transport Authentication            July 2019
 
    [I-D.ietf-quic-http]
               Bishop, M., "Hypertext Transfer Protocol Version 3
-              (HTTP/3)", draft-ietf-quic-http-20 (work in progress),
-              April 2019.
+              (HTTP/3)", draft-ietf-quic-http-24 (work in progress), 4
+              November 2019,
+              <http://www.ietf.org/internet-drafts/draft-ietf-quic-http-
+              24.txt>.
 
    [I-D.ietf-quic-tls]
               Thomson, M. and S. Turner, "Using TLS to Secure QUIC",
-              draft-ietf-quic-tls-20 (work in progress), April 2019.
+              draft-ietf-quic-tls-24 (work in progress), 3 November
+              2019,
+              <http://www.ietf.org/internet-drafts/draft-ietf-quic-tls-
+              24.txt>.
 
    [I-D.ietf-quic-transport]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
-              and Secure Transport", draft-ietf-quic-transport-20 (work
-              in progress), April 2019.
+              and Secure Transport", draft-ietf-quic-transport-24 (work
+              in progress), 3 November 2019,
+              <http://www.ietf.org/internet-drafts/draft-ietf-quic-
+              transport-24.txt>.
 
    [I-D.pauly-quic-datagram]
               Pauly, T., Kinnear, E., and D. Schinazi, "An Unreliable
-              Datagram Extension to QUIC", draft-pauly-quic-datagram-03
-              (work in progress), July 2019.
+              Datagram Extension to QUIC", draft-pauly-quic-datagram-05
+              (work in progress), 4 November 2019,
+              <http://www.ietf.org/internet-drafts/draft-pauly-quic-
+              datagram-05.txt>.
 
    [I-D.schinazi-masque]
               Schinazi, D., "The MASQUE Protocol", draft-schinazi-
-              masque-00 (work in progress), February 2019.
+              masque-01 (work in progress), 8 July 2019,
+              <http://www.ietf.org/internet-drafts/draft-schinazi-
+              masque-01.txt>.
 
    [I-D.vvv-webtransport-http3]
               Vasiliev, V., "WebTransport over HTTP/3", draft-vvv-
-              webtransport-http3-00 (work in progress), May 2019.
+              webtransport-http3-01 (work in progress), 3 November 2019,
+              <http://www.ietf.org/internet-drafts/draft-vvv-
+              webtransport-http3-01.txt>.
 
    [RFC6234]  Eastlake 3rd, D. and T. Hansen, "US Secure Hash Algorithms
               (SHA and SHA-based HMAC and HKDF)", RFC 6234,
@@ -441,27 +388,11 @@ Internet-Draft        HTTP Transport Authentication            July 2019
               DOI 10.17487/RFC7427, January 2015,
               <https://www.rfc-editor.org/info/rfc7427>.
 
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 8]
-
-Internet-Draft        HTTP Transport Authentication            July 2019
-
-
    [RFC8410]  Josefsson, S. and J. Schaad, "Algorithm Identifiers for
               Ed25519, Ed448, X25519, and X448 for Use in the Internet
               X.509 Public Key Infrastructure", RFC 8410,
               DOI 10.17487/RFC8410, August 2018,
               <https://www.rfc-editor.org/info/rfc8410>.
-
-8.3.  URIs
-
-   [1] https://www.iana.org/assignments/message-headers/
-
-   [2] https://www.iana.org/assignments/tls-parameters/tls-
-       parameters.xhtml#exporter-labels
 
 Acknowledgments
 
@@ -475,30 +406,7 @@ Author's Address
    David Schinazi
    Google LLC
    1600 Amphitheatre Parkway
-   Mountain View, California 94043
+   Mountain View, California 94043,
    United States of America
 
    Email: dschinazi.ietf@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Schinazi                 Expires January 9, 2020                [Page 9]
