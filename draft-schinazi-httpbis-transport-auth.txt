@@ -4,8 +4,8 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                              12 March 2020
-Expires: 13 September 2020
+Intended status: Experimental                              13 March 2020
+Expires: 14 September 2020
 
 
                      HTTP Transport Authentication
@@ -37,7 +37,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 September 2020.
+   This Internet-Draft will expire on 14 September 2020.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Schinazi                Expires 13 September 2020               [Page 1]
+Schinazi                Expires 14 September 2020               [Page 1]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
@@ -98,25 +98,24 @@ Table of Contents
 
    Traditional HTTP semantics specify that HTTP is a stateless protocol
    where each request can be understood in isolation [RFC7230].
-   However, the emergence of QUIC [I-D.ietf-quic-transport] as a new
-   transport protocol that can carry HTTP [I-D.ietf-quic-http] and the
-   existence of QUIC extensions such as the DATAGRAM frame
-   [I-D.pauly-quic-datagram] enable new uses of HTTP such as
-   [I-D.vvv-webtransport-http3] and [I-D.schinazi-masque] where some
-   traffic is exchanged that is disctinct from HTTP requests and
-   responses.  In order to authenticate this traffic, it is necessary to
-   authenticate the underlying transport (e.g., QUIC or TLS [RFC8446])
+   However, the emergence of QUIC [QUIC] as a new transport protocol
+   that can carry HTTP [HTTP3] and the existence of QUIC extensions such
+   as the DATAGRAM frame [DGRAM] enable new uses of HTTP such as
+   [WEBTRANS-H] and [MASQUE] where some traffic is exchanged that is
+   disctinct from HTTP requests and responses.  In order to authenticate
+   this traffic, it is necessary to authenticate the underlying
+   transport (e.g., QUIC or TLS [RFC8446]) instead of authenticate each
 
 
 
-Schinazi                Expires 13 September 2020               [Page 2]
+
+Schinazi                Expires 14 September 2020               [Page 2]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
 
-   instead of authenticate each request individually.  This mechanism
-   aims to supplement the HTTP Authentication Framework [RFC7235], not
-   replace it.
+   request individually.  This mechanism aims to supplement the HTTP
+   Authentication Framework [RFC7235], not replace it.
 
    Note that there is currently no mechanism for origin servers to
    request that user agents authenticate themselves using Transport
@@ -146,7 +145,7 @@ Internet-Draft        HTTP Transport Authentication           March 2020
    This document only defines Transport Authentication for uses of HTTP
    with TLS.  This includes any use of HTTP over TLS as typically used
    for HTTP/2, or HTTP/3 where the transport protocol uses TLS as its
-   authentication and key exchange mechanism [I-D.ietf-quic-tls].
+   authentication and key exchange mechanism [QUIC-TLS].
 
    The user agent leverages a TLS keying material exporter [RFC5705] to
    generate a nonce which can be signed using the user-id's key.  The
@@ -165,14 +164,15 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
 
 
-Schinazi                Expires 13 September 2020               [Page 3]
+
+Schinazi                Expires 14 September 2020               [Page 3]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
 
-     Transport-Authentication = transp-auth-scheme *( OWS ";" OWS parameter )
-     transp-auth-scheme       = token
-     parameter                = token "=" ( token / quoted-string )
+     Transport-Authentication = tpauth-scheme *( OWS ";" OWS param )
+     tpauth-scheme            = token
+     param                    = token "=" ( token / quoted-string )
 
 3.1.  The u Directive
 
@@ -221,12 +221,13 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
 
 
-Schinazi                Expires 13 September 2020               [Page 4]
+Schinazi                Expires 14 September 2020               [Page 4]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
 
-   Transport-Authentication: Signature u="am9obi5kb2U=";a=1.3.101.112;
+   Transport-Authentication: Signature u="am9obi5kb2U=";
+   a=1.3.101.112;
    p="SW5zZXJ0IHNpZ25hdHVyZSBvZiBub25jZSBoZXJlIHdo
    aWNoIHRha2VzIDUxMiBiaXRzIGZvciBFZDI1NTE5IQ=="
 
@@ -245,7 +246,8 @@ Internet-Draft        HTTP Transport Authentication           March 2020
    [RFC6234] could produce the following header (lines are folded to
    fit):
 
-   Transport-Authentication: HMAC u="am9obi5kb2U=";a=2.16.840.1.101.3.4.2.3;
+   Transport-Authentication: HMAC u="am9obi5kb2U=";
+   a=2.16.840.1.101.3.4.2.3;
    p="SW5zZXJ0IEhNQUMgb2Ygbm9uY2UgaGVyZSB3aGljaCB0YWtl
    cyA1MTIgYml0cyBmb3IgU0hBLTUxMiEhISEhIQ=="
 
@@ -275,9 +277,7 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
 
 
-
-
-Schinazi                Expires 13 September 2020               [Page 5]
+Schinazi                Expires 14 September 2020               [Page 5]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
@@ -289,11 +289,11 @@ Internet-Draft        HTTP Transport Authentication           March 2020
    registry maintained at https://www.iana.org/assignments/message-
    headers/ (https://www.iana.org/assignments/message-headers/).
 
-     +--------------------------+----------+--------------+---------------+
-     |    Header Field Name     | Protocol |    Status    |   Reference   |
-     +--------------------------+----------+--------------+---------------+
-     | Transport-Authentication |   http   | experimental | This document |
-     +--------------------------+----------+--------------+---------------+
+     +--------------------------+----------+--------+---------------+
+     |    Header Field Name     | Protocol | Status |   Reference   |
+     +--------------------------+----------+--------+---------------+
+     | Transport-Authentication |   http   |  exp   | This document |
+     +--------------------------+----------+--------+---------------+
 
 7.2.  Transport Authentication Schemes Registry
 
@@ -333,7 +333,7 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
 
 
-Schinazi                Expires 13 September 2020               [Page 6]
+Schinazi                Expires 14 September 2020               [Page 6]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
@@ -389,7 +389,7 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
 
 
-Schinazi                Expires 13 September 2020               [Page 7]
+Schinazi                Expires 14 September 2020               [Page 7]
 
 Internet-Draft        HTTP Transport Authentication           March 2020
 
@@ -403,52 +403,32 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
 8.2.  Informative References
 
-   [I-D.ietf-quic-http]
-              Bishop, M., "Hypertext Transfer Protocol Version 3
+   [DGRAM]    Pauly, T., Kinnear, E., and D. Schinazi, "An Unreliable
+              Datagram Extension to QUIC", Work in Progress, Internet-
+              Draft, draft-ietf-quic-datagram-00, 26 February 2020,
+              <http://www.ietf.org/internet-drafts/draft-ietf-quic-
+              datagram-00.txt>.
+
+   [HTTP3]    Bishop, M., "Hypertext Transfer Protocol Version 3
               (HTTP/3)", Work in Progress, Internet-Draft, draft-ietf-
               quic-http-27, 21 February 2020, <http://www.ietf.org/
               internet-drafts/draft-ietf-quic-http-27.txt>.
 
-   [I-D.ietf-quic-tls]
-              Thomson, M. and S. Turner, "Using TLS to Secure QUIC",
-              Work in Progress, Internet-Draft, draft-ietf-quic-tls-27,
-              21 February 2020, <http://www.ietf.org/internet-drafts/
-              draft-ietf-quic-tls-27.txt>.
+   [MASQUE]   Schinazi, D., "The MASQUE Protocol", Work in Progress,
+              Internet-Draft, draft-schinazi-masque-protocol-01, 12
+              March 2020, <http://www.ietf.org/internet-drafts/draft-
+              schinazi-masque-protocol-01.txt>.
 
-   [I-D.ietf-quic-transport]
-              Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
+   [QUIC]     Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
               and Secure Transport", Work in Progress, Internet-Draft,
               draft-ietf-quic-transport-27, 21 February 2020,
               <http://www.ietf.org/internet-drafts/draft-ietf-quic-
               transport-27.txt>.
 
-   [I-D.pauly-quic-datagram]
-              Pauly, T., Kinnear, E., and D. Schinazi, "An Unreliable
-              Datagram Extension to QUIC", Work in Progress, Internet-
-              Draft, draft-pauly-quic-datagram-05, 4 November 2019,
-              <http://www.ietf.org/internet-drafts/draft-pauly-quic-
-              datagram-05.txt>.
-
-   [I-D.schinazi-masque]
-              Schinazi, D., "The MASQUE Protocol", Work in Progress,
-              Internet-Draft, draft-schinazi-masque-02, 8 January 2020,
-              <http://www.ietf.org/internet-drafts/draft-schinazi-
-              masque-02.txt>.
-
-   [I-D.vvv-webtransport-http3]
-              Vasiliev, V., "WebTransport over HTTP/3", Work in
-              Progress, Internet-Draft, draft-vvv-webtransport-http3-01,
-              3 November 2019, <http://www.ietf.org/internet-drafts/
-              draft-vvv-webtransport-http3-01.txt>.
-
-
-
-
-
-Schinazi                Expires 13 September 2020               [Page 8]
-
-Internet-Draft        HTTP Transport Authentication           March 2020
-
+   [QUIC-TLS] Thomson, M. and S. Turner, "Using TLS to Secure QUIC",
+              Work in Progress, Internet-Draft, draft-ietf-quic-tls-27,
+              21 February 2020, <http://www.ietf.org/internet-drafts/
+              draft-ietf-quic-tls-27.txt>.
 
    [RFC6234]  Eastlake 3rd, D. and T. Hansen, "US Secure Hash Algorithms
               (SHA and SHA-based HMAC and HKDF)", RFC 6234,
@@ -462,9 +442,23 @@ Internet-Draft        HTTP Transport Authentication           March 2020
 
    [RFC8410]  Josefsson, S. and J. Schaad, "Algorithm Identifiers for
               Ed25519, Ed448, X25519, and X448 for Use in the Internet
+
+
+
+Schinazi                Expires 14 September 2020               [Page 8]
+
+Internet-Draft        HTTP Transport Authentication           March 2020
+
+
               X.509 Public Key Infrastructure", RFC 8410,
               DOI 10.17487/RFC8410, August 2018,
               <https://www.rfc-editor.org/info/rfc8410>.
+
+   [WEBTRANS-H]
+              Vasiliev, V., "WebTransport over HTTP/3", Work in
+              Progress, Internet-Draft, draft-vvv-webtransport-http3-01,
+              3 November 2019, <http://www.ietf.org/internet-drafts/
+              draft-vvv-webtransport-http3-01.txt>.
 
 Acknowledgments
 
@@ -501,4 +495,10 @@ Author's Address
 
 
 
-Schinazi                Expires 13 September 2020               [Page 9]
+
+
+
+
+
+
+Schinazi                Expires 14 September 2020               [Page 9]
