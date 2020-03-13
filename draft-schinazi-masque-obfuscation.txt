@@ -4,12 +4,12 @@
 
 Network Working Group                                        D. Schinazi
 Internet-Draft                                                Google LLC
-Intended status: Experimental                             8 January 2020
-Expires: 11 July 2020
+Intended status: Experimental                              12 March 2020
+Expires: 13 September 2020
 
 
                            MASQUE Obfuscation
-                   draft-schinazi-masque-obfuscation
+                draft-schinazi-masque-obfuscation-latest
 
 Abstract
 
@@ -48,7 +48,15 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 11 July 2020.
+   This Internet-Draft will expire on 13 September 2020.
+
+
+
+
+Schinazi                Expires 13 September 2020               [Page 1]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
 
 Copyright Notice
 
@@ -66,30 +74,30 @@ Copyright Notice
 
 Table of Contents
 
-   1.  Introduction
-       1.1.  Conventions and Definitions
-   2.  Usage Scenarios
-       2.1.  Protection from Network Providers
-       2.2.  Protection from Web Servers
-       2.3.  Onion Routing
-   3.  Requirements
-       3.1.  Invisibility of Usage
-       3.2.  Invisibility of the Server
-       3.3.  Fallback to HTTP/2 over TLS over TCP
-   4.  Overview of the Mechanism
-   5.  Connection Resumption
-   6.  Path MTU Discovery
-   7.  Operation over HTTP/2
-   8.  Security Considerations
-       8.1.  Traffic Analysis
-       8.2.  Untrusted Servers
-   9.  IANA Considerations
-   10.  References
-       10.1.  Normative References
-       10.2.  Informative References
-   Acknowledgments
-   Design Justifications
-   Author's Address
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Conventions and Definitions . . . . . . . . . . . . . . .   3
+   2.  Usage Scenarios . . . . . . . . . . . . . . . . . . . . . . .   3
+     2.1.  Protection from Network Providers . . . . . . . . . . . .   3
+     2.2.  Protection from Web Servers . . . . . . . . . . . . . . .   3
+     2.3.  Onion Routing . . . . . . . . . . . . . . . . . . . . . .   4
+   3.  Requirements  . . . . . . . . . . . . . . . . . . . . . . . .   4
+     3.1.  Invisibility of Usage . . . . . . . . . . . . . . . . . .   4
+     3.2.  Invisibility of the Server  . . . . . . . . . . . . . . .   4
+     3.3.  Fallback to HTTP/2 over TLS over TCP  . . . . . . . . . .   4
+   4.  Overview of the Mechanism . . . . . . . . . . . . . . . . . .   5
+   5.  Connection Resumption . . . . . . . . . . . . . . . . . . . .   5
+   6.  Path MTU Discovery  . . . . . . . . . . . . . . . . . . . . .   5
+   7.  Operation over HTTP/2 . . . . . . . . . . . . . . . . . . . .   5
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
+     8.1.  Traffic Analysis  . . . . . . . . . . . . . . . . . . . .   6
+     8.2.  Untrusted Servers . . . . . . . . . . . . . . . . . . . .   7
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .   7
+     10.2.  Informative References . . . . . . . . . . . . . . . . .   8
+   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .   9
+   Design Justifications . . . . . . . . . . . . . . . . . . . . . .   9
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  11
 
 1.  Introduction
 
@@ -98,6 +106,14 @@ Table of Contents
    applications behind an HTTPS web server.  The currently prevalent
    use-case is to allow running a proxy or VPN server that is
    indistinguishable from an HTTPS server to any unauthenticated
+
+
+
+Schinazi                Expires 13 September 2020               [Page 2]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
    observer.  We do not expect major providers and CDNs to deploy this
    behind their main TLS certificate, as they are not willing to take
    the risk of getting blocked, as shown when domain fronting was
@@ -147,6 +163,13 @@ Table of Contents
    Obfuscation server.  The web server will only see the IP address of
    the MASQUE Obfuscation server, not that of the client.
 
+
+
+Schinazi                Expires 13 September 2020               [Page 3]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
 2.3.  Onion Routing
 
    Routing traffic through a MASQUE Obfuscation server only provides
@@ -189,6 +212,19 @@ Table of Contents
    When QUIC is blocked, MASQUE Obfuscation can run over TCP and still
    satisfy previous requirements.  Note that in this scenario
    performance may be negatively impacted.
+
+
+
+
+
+
+
+
+
+Schinazi                Expires 13 September 2020               [Page 4]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
 
 4.  Overview of the Mechanism
 
@@ -238,6 +274,14 @@ Table of Contents
    negotiate the use of datagrams over an HTTP/2 stream
    [HTTP2-TRANSPORT].
 
+
+
+
+Schinazi                Expires 13 September 2020               [Page 5]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
    MASQUE Obfuscation implementations SHOULD discover that HTTP/3 is
    available (as opposed to only HTTP/2) using the same mechanism as
    regular HTTP traffic.  This current standardized mechanism for this
@@ -283,6 +327,17 @@ Table of Contents
    servers as different paths.  This could afford an additional level of
    obfuscation in hopes of rendering traffic analysis less effective.
 
+
+
+
+
+
+
+Schinazi                Expires 13 September 2020               [Page 6]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
 8.2.  Untrusted Servers
 
    As with any proxy or VPN technology, MASQUE Obfuscation hides some of
@@ -314,27 +369,34 @@ Table of Contents
 
    [HTTP2-TRANSPORT]
               Kinnear, E. and T. Pauly, "Using HTTP/2 as a Transport for
-              Arbitrary Bytestreams", draft-kinnear-httpbis-
-              http2-transport-02 (work in progress), 4 November 2019,
+              Arbitrary Bytestreams", Work in Progress, Internet-Draft,
+              draft-kinnear-httpbis-http2-transport-02, 4 November 2019,
               <http://www.ietf.org/internet-drafts/draft-kinnear-
               httpbis-http2-transport-02.txt>.
 
    [HTTP3]    Bishop, M., "Hypertext Transfer Protocol Version 3
-              (HTTP/3)", draft-ietf-quic-http-24 (work in progress), 4
-              November 2019,
-              <http://www.ietf.org/internet-drafts/draft-ietf-quic-http-
-              24.txt>.
+              (HTTP/3)", Work in Progress, Internet-Draft, draft-ietf-
+              quic-http-27, 21 February 2020, <http://www.ietf.org/
+              internet-drafts/draft-ietf-quic-http-27.txt>.
 
-   [MASQUE]   Schinazi, D., "The MASQUE Protocol", draft-schinazi-
-              masque-01 (work in progress), 8 July 2019,
+   [MASQUE]   Schinazi, D., "The MASQUE Protocol", Work in Progress,
+              Internet-Draft, draft-schinazi-masque-02, 8 January 2020,
               <http://www.ietf.org/internet-drafts/draft-schinazi-
-              masque-01.txt>.
+              masque-02.txt>.
 
    [QUIC]     Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
-              and Secure Transport", draft-ietf-quic-transport-24 (work
-              in progress), 3 November 2019,
+              and Secure Transport", Work in Progress, Internet-Draft,
+
+
+
+Schinazi                Expires 13 September 2020               [Page 7]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
+              draft-ietf-quic-transport-27, 21 February 2020,
               <http://www.ietf.org/internet-drafts/draft-ietf-quic-
-              transport-24.txt>.
+              transport-27.txt>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -350,47 +412,55 @@ Table of Contents
               <https://www.rfc-editor.org/info/rfc8446>.
 
    [TRANSPORT-AUTH]
-              Schinazi, D., "HTTP Transport Authentication", draft-
-              schinazi-httpbis-transport-auth-00 (work in progress), 8
-              July 2019,
-              <http://www.ietf.org/internet-drafts/draft-schinazi-
-              httpbis-transport-auth-00.txt>.
+              Schinazi, D., "HTTP Transport Authentication", Work in
+              Progress, Internet-Draft, draft-schinazi-httpbis-
+              transport-auth-01, 8 January 2020, <http://www.ietf.org/
+              internet-drafts/draft-schinazi-httpbis-transport-auth-
+              01.txt>.
 
 10.2.  Informative References
 
    [HTTPSSVC] Schwartz, B., Bishop, M., and E. Nygren, "Service binding
               and parameter specification via the DNS (DNS SVCB and
-              HTTPSSVC)", draft-ietf-dnsop-svcb-httpssvc-01 (work in
-              progress), 4 November 2019,
+              HTTPSSVC)", Work in Progress, Internet-Draft, draft-ietf-
+              dnsop-svcb-httpssvc-02, 9 March 2020,
               <http://www.ietf.org/internet-drafts/draft-ietf-dnsop-
-              svcb-httpssvc-01.txt>.
+              svcb-httpssvc-02.txt>.
 
    [I-D.ietf-httpbis-http2-secondary-certs]
               Bishop, M., Sullivan, N., and M. Thomson, "Secondary
-              Certificate Authentication in HTTP/2", draft-ietf-httpbis-
-              http2-secondary-certs-05 (work in progress), 1 November
-              2019,
-              <http://www.ietf.org/internet-drafts/draft-ietf-httpbis-
-              http2-secondary-certs-05.txt>.
+              Certificate Authentication in HTTP/2", Work in Progress,
+              Internet-Draft, draft-ietf-httpbis-http2-secondary-certs-
+              05, 1 November 2019, <http://www.ietf.org/internet-drafts/
+              draft-ietf-httpbis-http2-secondary-certs-05.txt>.
 
    [I-D.pardue-httpbis-http-network-tunnelling]
               Pardue, L., "HTTP-initiated Network Tunnelling (HiNT)",
-              draft-pardue-httpbis-http-network-tunnelling-01 (work in
-              progress), 18 October 2018,
+              Work in Progress, Internet-Draft, draft-pardue-httpbis-
+              http-network-tunnelling-01, 18 October 2018,
               <http://www.ietf.org/internet-drafts/draft-pardue-httpbis-
               http-network-tunnelling-01.txt>.
 
+
+
+
+
+Schinazi                Expires 13 September 2020               [Page 8]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
    [I-D.schwartz-httpbis-helium]
               Schwartz, B., "Hybrid Encapsulation Layer for IP and UDP
-              Messages (HELIUM)", draft-schwartz-httpbis-helium-00 (work
-              in progress), 25 June 2018,
+              Messages (HELIUM)", Work in Progress, Internet-Draft,
+              draft-schwartz-httpbis-helium-00, 25 June 2018,
               <http://www.ietf.org/internet-drafts/draft-schwartz-
               httpbis-helium-00.txt>.
 
    [I-D.sullivan-tls-post-handshake-auth]
               Sullivan, N., Thomson, M., and M. Bishop, "Post-Handshake
-              Authentication in TLS", draft-sullivan-tls-post-handshake-
-              auth-00 (work in progress), 5 August 2016,
+              Authentication in TLS", Work in Progress, Internet-Draft,
+              draft-sullivan-tls-post-handshake-auth-00, 5 August 2016,
               <http://www.ietf.org/internet-drafts/draft-sullivan-tls-
               post-handshake-auth-00.txt>.
 
@@ -427,6 +497,14 @@ Design Justifications
    before it has authenticated the client.  Adding an explicit nonce
    mechanism would expose the server as it would need to send these
    nonces to clients that have not been authenticated yet.
+
+
+
+
+Schinazi                Expires 13 September 2020               [Page 9]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
 
    The rationale for a separate MASQUE protocol stream is to allow
    server-initiated messages.  If we were to use HTTP semantics, we
@@ -476,6 +554,14 @@ Design Justifications
    allows sending QUIC DATAGRAM frames without authenticating every
    frame individually.  Additionally, HMAC and asymmetric keying are
    preferred to sending a password for client authentication since they
+
+
+
+Schinazi                Expires 13 September 2020              [Page 10]
+
+Internet-Draft             MASQUE Obfuscation                 March 2020
+
+
    have a tighter security bound.  Going into the design rationale,
    HMACs (and signatures) need some data to sign, and to avoid replay
    attacks that should be a fresh nonce provided by the remote peer.
@@ -493,3 +579,38 @@ Author's Address
    United States of America
 
    Email: dschinazi.ietf@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schinazi                Expires 13 September 2020              [Page 11]
